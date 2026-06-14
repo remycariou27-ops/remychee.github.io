@@ -82,7 +82,7 @@ const tx = (delta, reason) => ({ id: genId(), date: Date.now(), delta, reason })
 // 3. Ajoute ton URL GitHub Pages dans OAuth2 → Redirects (l'URL EXACTE du site)
 // 4. Mets ton identifiant Discord numérique dans allowedUserId
 const DISCORD = {
-  clientId: "TON_CLIENT_ID_DISCORD",
+  clientId: "1515833716998672395",
   allowedUserId: "690680975188820018",
   scope: "identify",
 };
