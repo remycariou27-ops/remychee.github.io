@@ -402,6 +402,7 @@ $$(".subtabs").forEach((nav) => {
         sv.hidden = sv.id !== "sub-" + name;
       });
       if (name === "calendrier") renderCalendar();
+      if (name === "budget") renderBudget();
     });
   });
 });
@@ -451,6 +452,15 @@ const WEATHER_CODES = {
 };
 let weatherLoaded = false;
 
+function uvLabel(uv) {
+  if (uv == null) return "";
+  if (uv < 3) return "faible";
+  if (uv < 6) return "modéré";
+  if (uv < 8) return "élevé";
+  if (uv < 11) return "très élevé";
+  return "extrême";
+}
+
 async function loadWeather() {
   const body = $("#weather-body");
   if (!body) return;
@@ -459,15 +469,32 @@ async function loadWeather() {
     `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_COORDS.lat}` +
     `&longitude=${WEATHER_COORDS.lon}` +
     `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m` +
-    `&daily=temperature_2m_max,temperature_2m_min&timezone=Europe%2FParis`;
+    `&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max` +
+    `&forecast_days=5&timezone=Europe%2FParis`;
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     const cur = data.current;
+    const d = data.daily;
     const w = WEATHER_CODES[cur.weather_code] || { label: "—", icon: "❓" };
-    const max = Math.round(data.daily.temperature_2m_max[0]);
-    const min = Math.round(data.daily.temperature_2m_min[0]);
+    const max = Math.round(d.temperature_2m_max[0]);
+    const min = Math.round(d.temperature_2m_min[0]);
+    const uv = d.uv_index_max ? Math.round(d.uv_index_max[0]) : null;
+
+    const forecast = d.time
+      .map((iso, i) => {
+        const jour = i === 0 ? "Auj." : cap(new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "short" }));
+        const fw = WEATHER_CODES[d.weather_code[i]] || { icon: "❓" };
+        return `
+          <div class="wf-day">
+            <span class="wf-dow">${jour}</span>
+            <span class="wf-icon">${fw.icon}</span>
+            <span class="wf-temp">${Math.round(d.temperature_2m_max[i])}°<span class="wf-min">${Math.round(d.temperature_2m_min[i])}°</span></span>
+          </div>`;
+      })
+      .join("");
+
     body.innerHTML = `
       <div class="weather-main">
         <span class="weather-icon">${w.icon}</span>
@@ -476,9 +503,10 @@ async function loadWeather() {
       <div class="weather-desc">${w.label}</div>
       <div class="weather-extra">
         <span>Ressenti ${Math.round(cur.apparent_temperature)}°</span>
-        <span>Max ${max}° · Min ${min}°</span>
         <span>Vent ${Math.round(cur.wind_speed_10m)} km/h</span>
-      </div>`;
+        ${uv != null ? `<span>UV ${uv} (${uvLabel(uv)})</span>` : ""}
+      </div>
+      <div class="weather-forecast">${forecast}</div>`;
     weatherLoaded = true;
   } catch (e) {
     body.innerHTML = `
@@ -610,6 +638,49 @@ function renderDashboard() {
   renderAdmins();
   renderDashTasks();
   renderDashEvents();
+  renderDashFinance();
+  renderDashCalendar();
+}
+
+function renderDashFinance() {
+  const box = $("#dash-finance");
+  if (!box) return;
+  const bank = getBank();
+  const livrets = getLivrets();
+  const bankBalance = bank ? Number(bank.balance) || 0 : 0;
+  const totalLivrets = livrets.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+  box.innerHTML = `
+    <div class="finance-total">${fmt(bankBalance + totalLivrets)}</div>
+    <div class="finance-break">
+      <span>Compte : <b>${fmt(bankBalance)}</b></span>
+      <span>Épargne : <b>${fmt(totalLivrets)}</b></span>
+    </div>`;
+}
+
+function renderDashCalendar() {
+  const box = $("#dash-calendar");
+  if (!box) return;
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const first = new Date(year, month, 1);
+  const startOffset = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = todayStr();
+  const byDate = eventsByDate();
+
+  const titleEl = $("#dash-cal-title");
+  if (titleEl) titleEl.textContent = cap(first.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }));
+
+  const wd = ["L", "M", "M", "J", "V", "S", "D"];
+  let html = wd.map((d) => `<span class="mc-wd">${d}</span>`).join("");
+  for (let i = 0; i < startOffset; i++) html += `<span class="mc-cell"></span>`;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const ds = ymd(new Date(year, month, day));
+    const hasEv = (byDate[ds] || []).length > 0;
+    html += `<span class="mc-cell ${ds === today ? "today" : ""}">${day}${hasEv ? '<i class="mc-dot"></i>' : ""}</span>`;
+  }
+  box.innerHTML = html;
 }
 
 function renderDashTasks() {
@@ -1034,11 +1105,15 @@ function renderTimeGridView(wrap, days) {
   );
   wireEventClicks(wrap);
 
-  // Défilement initial vers 7h (sous l'en-tête collant)
+  // En-tête + barre "Journée" collants : positionne la barre sous l'en-tête
   const tg = $(".tg", wrap);
   const bodyEl = $(".tg-body", wrap);
   const header = $(".tg-header", wrap);
-  if (tg && bodyEl) tg.scrollTop = bodyEl.offsetTop + 7 * H - (header ? header.offsetHeight : 0);
+  const allday = $(".tg-allday", wrap);
+  if (allday && header) allday.style.top = header.offsetHeight + "px";
+  // Défilement initial vers 7h (sous les barres collantes)
+  const stick = (header ? header.offsetHeight : 0) + (allday ? allday.offsetHeight : 0);
+  if (tg && bodyEl) tg.scrollTop = bodyEl.offsetTop + 7 * H - stick;
 }
 
 function wireEventClicks(wrap) {
@@ -1620,6 +1695,120 @@ $("#confirm-form").addEventListener("submit", (e) => {
   }
 });
 
+// ====================== Budget mensuel ======================
+const getBudget = () => load(STORE.budget, { income: 0, categories: [], fixed: [] });
+const setBudget = (b) => save(STORE.budget, b);
+
+function renderBudget() {
+  const b = getBudget();
+  const incomeEl = $("#budget-income");
+  if (!incomeEl) return;
+  if (document.activeElement !== incomeEl) incomeEl.value = b.income || "";
+
+  const totalCats = (b.categories || []).reduce((s, c) => s + (Number(c.amount) || 0), 0);
+  const totalFixed = (b.fixed || []).reduce((s, f) => s + (Number(f.amount) || 0), 0);
+  const income = Number(b.income) || 0;
+  const reste = income - totalCats - totalFixed;
+
+  $("#budget-summary").innerHTML = `
+    <div class="bsum-item"><span>Revenu</span><b>${fmt(income)}</b></div>
+    <div class="bsum-item"><span>Catégories</span><b>${fmt(totalCats)}</b></div>
+    <div class="bsum-item"><span>Fixes / abos</span><b>${fmt(totalFixed)}</b></div>
+    <div class="bsum-item highlight"><span>Épargne possible</span><b class="${reste < 0 ? "neg" : "pos"}">${fmt(reste)}</b></div>`;
+
+  // Catégories
+  const cats = b.categories || [];
+  $("#budget-cats").innerHTML = cats.length
+    ? cats
+        .map(
+          (c) => `
+      <div class="budget-row">
+        <span class="bcat-color" style="background:${c.color || "#6aa6ff"}"></span>
+        <span class="budget-name">${escapeHtml(c.name)}</span>
+        <span class="budget-amount">${fmt(c.amount)}</span>
+        <button class="icon-btn danger" data-cat-del="${c.id}" title="Supprimer">🗑</button>
+      </div>`
+        )
+        .join("")
+    : `<p class="muted">Aucune catégorie. Ex : Courses, Loisirs, Essence…</p>`;
+
+  // Dépenses fixes
+  const fixed = b.fixed || [];
+  $("#budget-fixed").innerHTML = fixed.length
+    ? fixed
+        .map(
+          (f) => `
+      <div class="budget-row">
+        <span class="budget-name">${escapeHtml(f.name)}</span>
+        <span class="budget-amount">${fmt(f.amount)}</span>
+        <button class="icon-btn danger" data-fixed-del="${f.id}" title="Supprimer">🗑</button>
+      </div>`
+        )
+        .join("")
+    : `<p class="muted">Aucun abonnement / dépense fixe.</p>`;
+
+  $("#budget-cats")
+    .querySelectorAll("[data-cat-del]")
+    .forEach((btn) =>
+      btn.addEventListener("click", () => {
+        const bg = getBudget();
+        bg.categories = (bg.categories || []).filter((c) => c.id !== btn.dataset.catDel);
+        setBudget(bg);
+        renderBudget();
+      })
+    );
+  $("#budget-fixed")
+    .querySelectorAll("[data-fixed-del]")
+    .forEach((btn) =>
+      btn.addEventListener("click", () => {
+        const bg = getBudget();
+        bg.fixed = (bg.fixed || []).filter((f) => f.id !== btn.dataset.fixedDel);
+        setBudget(bg);
+        renderBudget();
+      })
+    );
+}
+
+const budgetIncomeEl = $("#budget-income");
+if (budgetIncomeEl) {
+  budgetIncomeEl.addEventListener("input", () => {
+    const b = getBudget();
+    b.income = parseFloat(budgetIncomeEl.value) || 0;
+    setBudget(b);
+    renderBudget();
+  });
+}
+const catAddForm = $("#cat-add-form");
+if (catAddForm) {
+  catAddForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const b = getBudget();
+    b.categories = b.categories || [];
+    b.categories.push({
+      id: genId(),
+      name: $("#cat-add-name").value.trim() || "Catégorie",
+      color: $("#cat-add-color").value,
+      amount: parseFloat($("#cat-add-amount").value) || 0,
+    });
+    setBudget(b);
+    catAddForm.reset();
+    $("#cat-add-color").value = "#6aa6ff";
+    renderBudget();
+  });
+}
+const fixedAddForm = $("#fixed-add-form");
+if (fixedAddForm) {
+  fixedAddForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const b = getBudget();
+    b.fixed = b.fixed || [];
+    b.fixed.push({ id: genId(), name: $("#fixed-add-name").value.trim() || "Dépense", amount: parseFloat($("#fixed-add-amount").value) || 0 });
+    setBudget(b);
+    fixedAddForm.reset();
+    renderBudget();
+  });
+}
+
 // ====================== Synthèse finances ======================
 function renderSummary() {
   const bank = getBank();
@@ -1642,6 +1831,7 @@ function renderAll() {
   renderBank();
   renderLivrets();
   renderSummary();
+  renderBudget();
   renderMembers();
 }
 

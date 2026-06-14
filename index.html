@@ -92,6 +92,16 @@
             <div id="dash-events"></div>
           </div>
 
+          <div class="dash-card">
+            <div class="dash-card-head"><h3>Patrimoine</h3></div>
+            <div id="dash-finance"></div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-card-head"><h3 id="dash-cal-title">Calendrier</h3></div>
+            <div id="dash-calendar" class="mini-cal"></div>
+          </div>
+
         </div>
 
         <section class="admins-section">
@@ -191,6 +201,7 @@
         <nav class="subtabs">
           <button class="subtab active" data-sub="compte">Mon compte</button>
           <button class="subtab" data-sub="livrets">Mes livrets</button>
+          <button class="subtab" data-sub="budget">Budget</button>
         </nav>
 
         <div id="sub-compte" class="subview">
@@ -208,6 +219,37 @@
             </div>
             <div id="livrets-list" class="livrets-list"></div>
             <p id="livrets-empty" class="muted">Aucun livret pour le moment. Ajoutez-en un.</p>
+          </div>
+        </div>
+
+        <!-- ---- Budget mensuel ---- -->
+        <div id="sub-budget" class="subview" hidden>
+          <div class="panel">
+            <div class="panel-head"><h2>Budget mensuel</h2></div>
+
+            <label class="budget-income">
+              <span>Revenu du mois (€)</span>
+              <input type="number" id="budget-income" step="0.01" min="0" placeholder="0.00">
+            </label>
+
+            <div id="budget-summary" class="budget-summary"></div>
+
+            <h3 class="budget-h">Catégories (budget alloué)</h3>
+            <form id="cat-add-form" class="budget-add">
+              <input type="color" id="cat-add-color" value="#6aa6ff" title="Couleur">
+              <input type="text" id="cat-add-name" placeholder="ex : Courses" required>
+              <input type="number" id="cat-add-amount" step="0.01" min="0" placeholder="€ alloués">
+              <button type="submit" class="btn btn-primary">Ajouter</button>
+            </form>
+            <div id="budget-cats" class="budget-list"></div>
+
+            <h3 class="budget-h">Abonnements / dépenses fixes</h3>
+            <form id="fixed-add-form" class="budget-add">
+              <input type="text" id="fixed-add-name" placeholder="ex : Netflix" required>
+              <input type="number" id="fixed-add-amount" step="0.01" min="0" placeholder="€ / mois" required>
+              <button type="submit" class="btn btn-primary">Ajouter</button>
+            </form>
+            <div id="budget-fixed" class="budget-list"></div>
           </div>
         </div>
       </section>
