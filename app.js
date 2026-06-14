@@ -1,6 +1,3 @@
-const SUPABASE_URL = "https://owpnpjlyttuhcozzizus.supabase.co" ;
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cG5wamx5dHR1aGNvenppenVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NjU3NzMsImV4cCI6MjA5NzA0MTc3M30.w0MxDSrn7MhHVdGRn3Lc9hjU3h74uteXqvXknLaON4k";
-
 // ====================== Configuration ======================
 const CREDENTIALS = { user: "remychee", pass: "2" };
 
@@ -75,8 +72,8 @@ const tx = (delta, reason) => ({ id: genId(), date: Date.now(), delta, reason })
 // À configurer (voir guide) :
 //  - SUPABASE_URL / SUPABASE_ANON_KEY : dans le tableau de bord Supabase (Settings → API)
 //  - Authentication → Providers → Discord : activé avec ton Client ID + Client Secret
-const SUPABASE_URL = "https://TON-PROJET.supabase.co";
-const SUPABASE_ANON_KEY = "TA_CLE_ANON_PUBLIQUE";
+const SUPABASE_URL = "https://owpnpjlyttuhcozzizus.supabase.co" ;
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cG5wamx5dHR1aGNvenppenVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NjU3NzMsImV4cCI6MjA5NzA0MTc3M30.w0MxDSrn7MhHVdGRn3Lc9hjU3h74uteXqvXknLaON4k";
 const ADMIN_ID = "690680975188820018"; // ton ID Discord = administrateur
 
 const supaConfigured = () =>
