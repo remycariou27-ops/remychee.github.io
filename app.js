@@ -1,13 +1,16 @@
+const SUPABASE_URL = "https://owpnpjlyttuhcozzizus.supabase.co" ;
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93cG5wamx5dHR1aGNvenppenVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NjU3NzMsImV4cCI6MjA5NzA0MTc3M30.w0MxDSrn7MhHVdGRn3Lc9hjU3h74uteXqvXknLaON4k";
+
 // ====================== Configuration ======================
 const CREDENTIALS = { user: "remychee", pass: "2" };
 
-const STORE = {
-  bank: "espace.bank",
-  livrets: "espace.livrets",
-  notes: "espace.notes",
-  todos: "espace.todos",
-  events: "espace.events",
-  eventTypes: "espace.eventTypes",
+// Données propres à l'utilisateur connecté (préfixe "own:")
+const STORE = new Proxy({}, { get: (_, name) => "own:" + String(name) });
+
+// Données partagées entre tous les utilisateurs (préfixe "shared:")
+const GLOBAL = {
+  members: "shared:members",
+  ownerProfile: "shared:ownerProfile",
 };
 
 // Aix-les-Bains
@@ -20,15 +23,7 @@ const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 const fmt = (n) => euro.format(Number(n) || 0);
 
-const load = (key, fallback) => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-};
-const save = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+// load / save / remove sont définis plus bas (couche données Supabase + cache).
 
 const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
@@ -76,47 +71,125 @@ const weekDays = (d) => Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(
 
 const tx = (delta, reason) => ({ id: genId(), date: Date.now(), delta, reason });
 
-// ====================== Authentification Discord ======================
-// 1. Crée une application sur https://discord.com/developers/applications
-// 2. Onglet OAuth2 → copie le "Client ID" ci-dessous
-// 3. Ajoute ton URL GitHub Pages dans OAuth2 → Redirects (l'URL EXACTE du site)
-// 4. Mets ton identifiant Discord numérique dans allowedUserId
-const DISCORD = {
-  clientId: "1515833716998672395",
-  allowedUserId: "690680975188820018",
-  scope: "identify",
-};
-const redirectUri = () => window.location.origin + window.location.pathname;
-const discordConfigured = () =>
-  DISCORD.clientId && !/^TON_/.test(DISCORD.clientId) && DISCORD.allowedUserId && !/^TON_/.test(DISCORD.allowedUserId);
+// ====================== Backend Supabase + Discord ======================
+// À configurer (voir guide) :
+//  - SUPABASE_URL / SUPABASE_ANON_KEY : dans le tableau de bord Supabase (Settings → API)
+//  - Authentication → Providers → Discord : activé avec ton Client ID + Client Secret
+const SUPABASE_URL = "https://TON-PROJET.supabase.co";
+const SUPABASE_ANON_KEY = "TA_CLE_ANON_PUBLIQUE";
+const ADMIN_ID = "690680975188820018"; // ton ID Discord = administrateur
+
+const supaConfigured = () =>
+  /^https:\/\/.+\.supabase\.co/.test(SUPABASE_URL) && SUPABASE_ANON_KEY && !/^TA_/.test(SUPABASE_ANON_KEY);
+const sb = supaConfigured() && window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 const loginView = $("#login-view");
 const appView = $("#app");
 
-const getSession = () => {
+// ---- Identité courante ----
+let currentUser = null; // { id (Discord), name, avatar(url) }
+function currentUid() {
+  return currentUser ? currentUser.id : "anon";
+}
+const isLoggedIn = () => !!currentUser;
+
+function userFromSession(session) {
+  const u = session.user;
+  const md = u.user_metadata || {};
+  return {
+    id: md.provider_id || md.sub || u.id,
+    name: md.full_name || md.name || md.user_name || md.global_name || "Utilisateur",
+    avatar: md.avatar_url || null,
+  };
+}
+
+// ---- Couche données : cache mémoire + miroir localStorage + Supabase ----
+let DB = {};
+
+function parseKey(key) {
+  const i = key.indexOf(":");
+  const scope = key.slice(0, i);
+  const k = key.slice(i + 1);
+  return { owner: scope === "shared" ? "shared" : currentUid(), k };
+}
+// Clé localStorage namespacée par utilisateur (évite toute fuite entre comptes)
+function lsKey(key) {
+  const { owner, k } = parseKey(key);
+  return `kv:${owner}:${k}`;
+}
+
+const load = (key, fallback) => {
+  if (Object.prototype.hasOwnProperty.call(DB, key)) return DB[key];
   try {
-    return JSON.parse(sessionStorage.getItem("espace.discord"));
-  } catch {
-    return null;
+    const raw = localStorage.getItem(lsKey(key));
+    if (raw !== null) return JSON.parse(raw);
+  } catch {}
+  return fallback;
+};
+const save = (key, value) => {
+  DB[key] = value;
+  try {
+    localStorage.setItem(lsKey(key), JSON.stringify(value));
+  } catch {}
+  if (sb) {
+    const { owner, k } = parseKey(key);
+    sb.from("kv").upsert({ owner, k, v: value }).then(({ error }) => error && console.warn("save", key, error.message));
   }
 };
-const setSession = (s) => sessionStorage.setItem("espace.discord", JSON.stringify(s));
-const clearSession = () => sessionStorage.removeItem("espace.discord");
-const isLoggedIn = () => {
-  const s = getSession();
-  return !!(s && s.expiresAt > Date.now());
+const remove = (key) => {
+  delete DB[key];
+  try {
+    localStorage.removeItem(lsKey(key));
+  } catch {}
+  if (sb) {
+    const { owner, k } = parseKey(key);
+    sb.from("kv").delete().match({ owner, k }).then(({ error }) => error && console.warn("remove", key, error.message));
+  }
 };
 
+async function hydrate() {
+  DB = {};
+  if (!sb) return;
+  const { data, error } = await sb.from("kv").select("owner,k,v").in("owner", [currentUid(), "shared"]);
+  if (error) {
+    console.warn("hydrate", error.message);
+    return;
+  }
+  data.forEach((row) => {
+    const key = (row.owner === "shared" ? "shared:" : "own:") + row.k;
+    DB[key] = row.v;
+    try {
+      localStorage.setItem(lsKey(key), JSON.stringify(row.v));
+    } catch {}
+  });
+}
+
+// Récupère l'éventuelle donnée locale (avant backend) vers l'espace de l'admin
+function migrateLocalToUser() {
+  if (String(currentUid()) !== String(ADMIN_ID)) return;
+  ["bank", "livrets", "notes", "todos", "events", "eventTypes"].forEach((n) => {
+    if (load("own:" + n, null) !== null) return;
+    const legacy = localStorage.getItem("espace." + n);
+    if (legacy !== null) {
+      try {
+        save("own:" + n, JSON.parse(legacy));
+      } catch {}
+    }
+  });
+}
+
+// ---- Affichage ----
 function showApp() {
   loginView.hidden = true;
   appView.hidden = false;
+  $("#tab-reglages-btn").hidden = !isAdmin();
   renderUserChip();
   renderAll();
 }
 function showLogin() {
   appView.hidden = true;
   loginView.hidden = false;
-  $("#login-config").hidden = discordConfigured();
+  $("#login-config").hidden = supaConfigured();
 }
 function setLoginStatus(msg) {
   const el = $("#login-status");
@@ -129,95 +202,182 @@ function setLoginError(msg) {
   el.hidden = !msg;
 }
 
+// ---- Connexion / déconnexion ----
 function startDiscordLogin() {
-  if (!discordConfigured()) {
+  if (!sb) {
     $("#login-config").hidden = false;
     return;
   }
   setLoginError("");
-  const state = genId() + genId();
-  sessionStorage.setItem("espace.oauthState", state);
-  const params = new URLSearchParams({
-    client_id: DISCORD.clientId,
-    redirect_uri: redirectUri(),
-    response_type: "token",
-    scope: DISCORD.scope,
-    state,
+  setLoginStatus("Redirection vers Discord…");
+  sb.auth.signInWithOAuth({
+    provider: "discord",
+    options: { redirectTo: window.location.origin + window.location.pathname, scopes: "identify" },
   });
-  window.location.href = "https://discord.com/api/oauth2/authorize?" + params.toString();
 }
 
 $("#discord-login").addEventListener("click", startDiscordLogin);
-$("#logout-btn").addEventListener("click", () => {
-  clearSession();
+$("#logout-btn").addEventListener("click", async () => {
+  if (sb) await sb.auth.signOut();
+  currentUser = null;
+  DB = {};
   showLogin();
 });
 
-async function verifyAndStore(token, expiresIn) {
-  setLoginStatus("Vérification du compte Discord…");
-  try {
-    const res = await fetch("https://discord.com/api/users/@me", {
-      headers: { Authorization: "Bearer " + token },
-    });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const user = await res.json();
-    setLoginStatus("");
-    if (String(user.id) !== String(DISCORD.allowedUserId)) {
-      clearSession();
-      setLoginError(`Accès refusé : le compte « ${user.global_name || user.username} » n'est pas autorisé.`);
-      showLogin();
-      return;
-    }
-    setSession({
-      token,
-      expiresAt: Date.now() + (Number(expiresIn) || 604800) * 1000,
-      user: { id: user.id, username: user.username, global_name: user.global_name, avatar: user.avatar },
-    });
-    showApp();
-  } catch (e) {
-    setLoginStatus("");
-    setLoginError("Impossible de contacter Discord. Vérifie ta connexion et réessaie.");
-    showLogin();
-  }
+async function afterLogin() {
+  await hydrate();
+  migrateLocalToUser();
+  cacheOwnerProfile();
+  showApp();
 }
 
 async function handleAuth() {
-  // Retour depuis Discord : token dans le fragment d'URL (#access_token=...)
-  if (window.location.hash.includes("access_token")) {
-    const frag = new URLSearchParams(window.location.hash.slice(1));
-    const token = frag.get("access_token");
-    const state = frag.get("state");
-    const savedState = sessionStorage.getItem("espace.oauthState");
-    sessionStorage.removeItem("espace.oauthState");
-    history.replaceState(null, "", redirectUri()); // nettoie l'URL
-    if (!token || !state || state !== savedState) {
-      setLoginError("Échec de la connexion (contrôle de sécurité). Réessaie.");
-      showLogin();
-      return;
+  if (!sb) {
+    showLogin();
+    return;
+  }
+  const {
+    data: { session },
+  } = await sb.auth.getSession();
+  if (session) {
+    currentUser = userFromSession(session);
+    await afterLogin();
+  } else {
+    showLogin();
+  }
+  sb.auth.onAuthStateChange(async (_event, sess) => {
+    if (sess && !currentUser) {
+      currentUser = userFromSession(sess);
+      await afterLogin();
     }
-    await verifyAndStore(token, frag.get("expires_in"));
-    return;
+  });
+}
+
+// ====================== Rôles & membres ======================
+const ROLES = {
+  admin: { label: "Administrateur", color: "#ef4444" },
+  vip: { label: "VIP", color: "#e0b341" },
+  membre: { label: "Membre", color: "#2ec27e" },
+};
+const getMembers = () => load(GLOBAL.members, []);
+const setMembers = (l) => save(GLOBAL.members, l);
+
+function roleOf(userId) {
+  if (String(userId) === String(ADMIN_ID)) return "admin";
+  const m = getMembers().find((x) => String(x.id) === String(userId));
+  return m && ROLES[m.role] ? m.role : "membre";
+}
+const currentRole = () => roleOf(currentUid());
+const isAdmin = () => currentRole() === "admin";
+
+function cacheOwnerProfile() {
+  if (currentUser && String(currentUser.id) === String(ADMIN_ID)) {
+    save(GLOBAL.ownerProfile, { id: currentUser.id, name: currentUser.name, avatar: currentUser.avatar });
   }
-  if (isLoggedIn()) {
-    showApp();
-    return;
-  }
-  showLogin();
 }
 
 function renderUserChip() {
   const chip = $("#user-chip");
-  if (!chip) return;
-  const s = getSession();
-  if (!s || !s.user) {
-    chip.innerHTML = "";
+  if (!chip || !currentUser) {
+    if (chip) chip.innerHTML = "";
     return;
   }
-  const name = s.user.global_name || s.user.username || "Connecté";
-  const avatar = s.user.avatar
-    ? `<img src="https://cdn.discordapp.com/avatars/${s.user.id}/${s.user.avatar}.png?size=32" alt="">`
-    : "";
-  chip.innerHTML = `${avatar}<span>${escapeHtml(name)}</span>`;
+  const avatar = currentUser.avatar ? `<img src="${currentUser.avatar}" alt="">` : "";
+  const r = ROLES[currentRole()];
+  chip.innerHTML = `${avatar}<span class="chip-name" style="color:${r.color}">${escapeHtml(currentUser.name)}</span>
+    <span class="role-badge" style="color:${r.color};border-color:${r.color}">${r.label}</span>`;
+}
+
+// ---- Section « Administrateurs » (accueil) ----
+function renderAdmins() {
+  const box = $("#admins-list");
+  if (!box) return;
+  const admins = [];
+  const owner = load(GLOBAL.ownerProfile, null);
+  admins.push({ id: ADMIN_ID, name: owner ? owner.name : "Administrateur", avatar: owner ? owner.avatar : null });
+  getMembers()
+    .filter((m) => m.role === "admin")
+    .forEach((m) => admins.push({ id: m.id, name: m.label || "Administrateur", avatar: null }));
+
+  box.innerHTML = admins
+    .map((a) => {
+      const av = a.avatar
+        ? `<img src="${a.avatar}" alt="">`
+        : `<span>${escapeHtml((a.name || "?").charAt(0).toUpperCase())}</span>`;
+      return `
+      <div class="admin-card">
+        <div class="admin-avatar">${av}</div>
+        <div class="admin-name" style="color:${ROLES.admin.color}">${escapeHtml(a.name)}</div>
+        <div class="admin-role">Administrateur</div>
+      </div>`;
+    })
+    .join("");
+}
+
+// ---- Réglages : gestion des membres (admin uniquement) ----
+function renderMembers() {
+  const box = $("#members-list");
+  if (!box) return;
+  const list = getMembers();
+  $("#members-empty").hidden = list.length > 0;
+  box.innerHTML = list
+    .map((m) => {
+      const r = ROLES[m.role] || ROLES.membre;
+      return `
+      <div class="member-row">
+        <span class="member-info">
+          <span class="member-name" style="color:${r.color}">${escapeHtml(m.label || "(sans nom)")}</span>
+          <span class="member-id">${escapeHtml(m.id)}</span>
+        </span>
+        <select data-member-role="${m.id}">
+          <option value="membre"${m.role === "membre" ? " selected" : ""}>Membre</option>
+          <option value="vip"${m.role === "vip" ? " selected" : ""}>VIP</option>
+          <option value="admin"${m.role === "admin" ? " selected" : ""}>Administrateur</option>
+        </select>
+        <button class="icon-btn danger" data-member-del="${m.id}" title="Retirer">🗑</button>
+      </div>`;
+    })
+    .join("");
+  box.querySelectorAll("[data-member-role]").forEach((sel) =>
+    sel.addEventListener("change", () => {
+      const l = getMembers();
+      const m = l.find((x) => String(x.id) === String(sel.dataset.memberRole));
+      if (m) {
+        m.role = sel.value;
+        setMembers(l);
+        renderMembers();
+        renderAdmins();
+        renderUserChip();
+      }
+    })
+  );
+  box.querySelectorAll("[data-member-del]").forEach((b) =>
+    b.addEventListener("click", () => {
+      setMembers(getMembers().filter((x) => String(x.id) !== String(b.dataset.memberDel)));
+      renderMembers();
+      renderAdmins();
+    })
+  );
+}
+
+const memberAddForm = $("#member-add-form");
+if (memberAddForm) {
+  memberAddForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const id = $("#member-id").value.trim();
+    if (!/^\d{5,25}$/.test(id)) {
+      alert("Identifiant Discord invalide (uniquement des chiffres).");
+      return;
+    }
+    if (getMembers().some((m) => String(m.id) === id)) {
+      alert("Ce membre est déjà dans la liste.");
+      return;
+    }
+    setMembers([...getMembers(), { id, label: $("#member-label").value.trim(), role: $("#member-role").value }]);
+    memberAddForm.reset();
+    renderMembers();
+    renderAdmins();
+  });
 }
 
 // ====================== Navigation ======================
@@ -226,10 +386,11 @@ $$("#main-tabs .tab").forEach((tab) => {
     $$("#main-tabs .tab").forEach((t) => t.classList.remove("active"));
     tab.classList.add("active");
     const name = tab.dataset.tab;
-    ["accueil", "organisation", "finances"].forEach((v) => {
+    ["accueil", "organisation", "finances", "reglages"].forEach((v) => {
       $("#view-" + v).hidden = v !== name;
     });
     if (name === "accueil") renderDashboard();
+    if (name === "reglages") renderMembers();
   });
 });
 
@@ -420,7 +581,7 @@ $("#type-add-form").addEventListener("submit", (e) => {
 
 // ====================== Seed + migration ======================
 function ensureSeed() {
-  if (!localStorage.getItem(STORE.eventTypes)) {
+  if (load(STORE.eventTypes, null) === null) {
     setTypes([
       { id: "t-rdv", name: "Rendez-vous", color: "#2ec27e" },
       { id: "t-perso", name: "Perso", color: "#6aa6ff" },
@@ -449,6 +610,7 @@ function ensureSeed() {
 // ====================== Dashboard ======================
 function renderDashboard() {
   if (!weatherLoaded) loadWeather();
+  renderAdmins();
   renderDashTasks();
   renderDashEvents();
 }
@@ -1147,7 +1309,7 @@ function renderBank() {
   $("#bank-edit").addEventListener("click", () => openBankModal(false));
   $("#bank-delete").addEventListener("click", () => {
     askConfirm(`Supprimer définitivement le compte « ${bank.name || "Compte"} » et tout son historique ?`, () => {
-      localStorage.removeItem(STORE.bank);
+      remove(STORE.bank);
       renderBank();
       renderSummary();
     });
@@ -1448,6 +1610,7 @@ function renderAll() {
   renderBank();
   renderLivrets();
   renderSummary();
+  renderMembers();
 }
 
 // ====================== Démarrage ======================

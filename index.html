@@ -34,7 +34,7 @@
       <p id="login-status" class="muted center" hidden></p>
       <p id="login-error" class="login-error" hidden></p>
       <p id="login-config" class="login-error" hidden>
-        Configuration Discord manquante : renseigne <code>clientId</code> et <code>allowedUserId</code> dans <code>app.js</code>.
+        Backend non configuré : renseigne <code>SUPABASE_URL</code> et <code>SUPABASE_ANON_KEY</code> dans <code>app.js</code>.
       </p>
     </div>
   </section>
@@ -57,6 +57,7 @@
         <button class="tab active" data-tab="accueil">Accueil</button>
         <button class="tab" data-tab="organisation">Organisation</button>
         <button class="tab" data-tab="finances">Finances</button>
+        <button class="tab" data-tab="reglages" id="tab-reglages-btn" hidden>Réglages</button>
       </nav>
       <span id="user-chip" class="user-chip"></span>
       <button id="logout-btn" class="btn btn-ghost">Déconnexion</button>
@@ -66,6 +67,11 @@
 
       <!-- ============ ACCUEIL / DASHBOARD ============ -->
       <section id="view-accueil" class="view">
+        <section class="admins-section">
+          <h2 class="admins-title">Administrateurs</h2>
+          <div id="admins-list" class="admins-list"></div>
+        </section>
+
         <div class="dash-grid">
 
           <div class="dash-card clock-card">
@@ -203,6 +209,29 @@
             <div id="livrets-list" class="livrets-list"></div>
             <p id="livrets-empty" class="muted">Aucun livret pour le moment. Ajoutez-en un.</p>
           </div>
+        </div>
+      </section>
+
+      <!-- ============ RÉGLAGES (admin) ============ -->
+      <section id="view-reglages" class="view" hidden>
+        <div class="panel">
+          <div class="panel-head"><h2>Réglages — Membres &amp; rôles</h2></div>
+          <p class="muted">
+            Ajoute des personnes par leur identifiant Discord et donne-leur un rôle.
+            Les rôles sont partagés : chacun les voit depuis son propre appareil.
+          </p>
+          <form id="member-add-form" class="member-add">
+            <input type="text" id="member-id" placeholder="ID Discord (ex : 690680975188820018)" required>
+            <input type="text" id="member-label" placeholder="Nom / pseudo">
+            <select id="member-role">
+              <option value="membre">Membre</option>
+              <option value="vip">VIP</option>
+              <option value="admin">Administrateur</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Ajouter</button>
+          </form>
+          <div id="members-list" class="members-list"></div>
+          <p id="members-empty" class="muted">Aucun membre ajouté pour le moment.</p>
         </div>
       </section>
 
@@ -401,6 +430,7 @@
     </form>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
 </body>
 </html>
