@@ -638,7 +638,7 @@ function renderDashTasks() {
 function renderDashEvents() {
   const box = $("#dash-events");
   const today = todayStr();
-  const events = getEvents().filter((e) => e.date >= today).sort(cmpEvent).slice(0, 6);
+  const events = getEvents().filter((e) => eventEndDate(e) >= today).sort(cmpEvent).slice(0, 6);
   if (!events.length) {
     box.innerHTML = `<p class="muted">Aucun rendez-vous à venir.</p>`;
     return;
@@ -854,9 +854,30 @@ function cmpEvent(a, b) {
 }
 
 function eventChip(e) {
+  const multi = isMultiDay(e);
   return `<button class="cal-chip" style="background:${colorOf(e)}" data-event="${e.id}">${
-    e.start ? e.start + " " : ""
+    e.start && !multi ? e.start + " " : ""
   }${escapeHtml(e.title)}</button>`;
+}
+
+// ---- Plage de dates d'un événement (date de début → date de fin) ----
+function eventEndDate(e) {
+  return e.endDate && e.endDate >= e.date ? e.endDate : e.date;
+}
+function isMultiDay(e) {
+  return eventEndDate(e) > e.date;
+}
+function eventDays(e) {
+  const out = [];
+  let d = new Date(e.date + "T00:00:00");
+  const end = new Date(eventEndDate(e) + "T00:00:00");
+  let guard = 0;
+  while (d <= end && guard < 400) {
+    out.push(ymd(d));
+    d = addDays(d, 1);
+    guard++;
+  }
+  return out.length ? out : [e.date];
 }
 
 // ---- État + dispatch des vues ----
@@ -890,9 +911,10 @@ function updateCalTitle() {
   $("#cal-title").textContent = cap(t);
 }
 
+// Map jour -> événements (les multi-jours apparaissent sur chaque jour couvert)
 function eventsByDate() {
   const map = {};
-  getEvents().forEach((e) => (map[e.date] = map[e.date] || []).push(e));
+  getEvents().forEach((e) => eventDays(e).forEach((ds) => (map[ds] = map[ds] || []).push(e)));
   return map;
 }
 
@@ -957,14 +979,15 @@ function renderTimeGridView(wrap, days) {
     .join("");
   html += `</div>`;
 
-  // Ligne "journée entière"
-  const hasAllDay = days.some((d) => (byDate[ymd(d)] || []).some((e) => !e.start));
+  // Ligne "journée entière" : événements sans heure OU sur plusieurs jours
+  const isAllDay = (e) => !e.start || isMultiDay(e);
+  const hasAllDay = days.some((d) => (byDate[ymd(d)] || []).some(isAllDay));
   if (hasAllDay) {
     html += `<div class="tg-allday"><div class="tg-allday-label">Journée</div>`;
     html += days
       .map((d) => {
         const ds = ymd(d);
-        const evs = (byDate[ds] || []).filter((e) => !e.start).sort(cmpEvent);
+        const evs = (byDate[ds] || []).filter(isAllDay).sort(cmpEvent);
         return `<div class="tg-allday-col" data-date="${ds}">${evs.map(eventChip).join("")}</div>`;
       })
       .join("");
@@ -979,7 +1002,9 @@ function renderTimeGridView(wrap, days) {
   html += days
     .map((d) => {
       const ds = ymd(d);
-      const evs = (byDate[ds] || []).filter((e) => e.start).sort((a, b) => minutes(a.start) - minutes(b.start));
+      const evs = (byDate[ds] || [])
+        .filter((e) => e.start && !isMultiDay(e))
+        .sort((a, b) => minutes(a.start) - minutes(b.start));
       const blocks = evs
         .map((e) => {
           const s = minutes(e.start);
@@ -1009,9 +1034,11 @@ function renderTimeGridView(wrap, days) {
   );
   wireEventClicks(wrap);
 
-  // Défilement initial vers 7h
-  const body = $(".tg-body", wrap);
-  if (body) body.scrollTop = 7 * H;
+  // Défilement initial vers 7h (sous l'en-tête collant)
+  const tg = $(".tg", wrap);
+  const bodyEl = $(".tg-body", wrap);
+  const header = $(".tg-header", wrap);
+  if (tg && bodyEl) tg.scrollTop = bodyEl.offsetTop + 7 * H - (header ? header.offsetHeight : 0);
 }
 
 function wireEventClicks(wrap) {
@@ -1100,7 +1127,10 @@ $("#cal-types").addEventListener("click", openTypeModal);
 function eventRow(e) {
   const c = colorOf(e);
   const t = typeById(e.typeId);
-  const when = cap(frDate(e.date)) + (e.start ? "<br>" + e.start + (e.end ? "–" + e.end : "") : "");
+  const when =
+    cap(frDate(e.date)) +
+    (isMultiDay(e) ? " → " + cap(frDate(eventEndDate(e))) : "") +
+    (e.start ? "<br>" + e.start + (e.end ? "–" + e.end : "") : "");
   return `
     <button class="agenda-item" style="border-left-color:${c}" data-event="${e.id}">
       <span class="agenda-type" style="color:${c}">${escapeHtml(t.name)}</span>
@@ -1150,6 +1180,7 @@ function openEventModal(id, presetDate, presetStart, presetEnd) {
     $("#event-modal-title").textContent = "Modifier l'événement";
     $("#event-title").value = ev.title;
     $("#event-date").value = ev.date;
+    $("#event-end-date").value = ev.endDate || "";
     $("#event-start").value = ev.start || "";
     $("#event-end").value = ev.end || "";
     populateTypeSelect(ev.typeId);
@@ -1158,6 +1189,7 @@ function openEventModal(id, presetDate, presetStart, presetEnd) {
   } else {
     $("#event-modal-title").textContent = "Nouvel événement";
     $("#event-date").value = presetDate || todayStr();
+    $("#event-end-date").value = "";
     $("#event-start").value = presetStart || "";
     if (presetEnd) {
       $("#event-end").value = presetEnd;
@@ -1189,9 +1221,12 @@ $("#event-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const id = $("#event-id").value;
   const list = getEvents();
+  const endDateVal = $("#event-end-date").value || "";
+  const startDateVal = $("#event-date").value;
   const data = {
     title: $("#event-title").value.trim(),
-    date: $("#event-date").value,
+    date: startDateVal,
+    endDate: endDateVal && endDateVal > startDateVal ? endDateVal : "",
     start: $("#event-start").value || "",
     end: $("#event-end").value || "",
     typeId: $("#event-type").value,

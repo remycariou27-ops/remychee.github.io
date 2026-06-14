@@ -515,9 +515,17 @@ textarea:focus, select:focus { border-color: var(--accent); }
 .cal-view-btn.active { background: var(--surface); color: var(--text); }
 
 /* ---------- Grille horaire (semaine / jour) ---------- */
-.tg { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.tg {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border); border-radius: 10px;
+  overflow: auto; max-height: 72vh; user-select: none;
+  position: relative;
+}
 .tg-header, .tg-allday { display: grid; grid-template-columns: 56px repeat(var(--cols), 1fr); }
-.tg-header { border-bottom: 1px solid var(--border); }
+.tg-header {
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 3; background: var(--surface);
+}
 .tg-corner { border-right: 1px solid var(--border); }
 .tg-dayhead { text-align: center; padding: 8px 4px; border-left: 1px solid var(--border); }
 .tg-dow { color: var(--muted); font-size: 0.78rem; text-transform: capitalize; }
@@ -527,10 +535,10 @@ textarea:focus, select:focus { border-color: var(--accent); }
 .tg-allday-label { font-size: 0.68rem; color: var(--muted); padding: 6px; border-right: 1px solid var(--border); display: flex; align-items: center; }
 .tg-allday-col { border-left: 1px solid var(--border); padding: 4px; display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
 
-.tg-body { display: grid; grid-template-columns: 56px repeat(var(--cols), 1fr); max-height: 70vh; overflow-y: auto; user-select: none; }
+.tg-body { display: grid; grid-template-columns: 56px repeat(var(--cols), 1fr); }
 .tg-hours { border-right: 1px solid var(--border); }
 .tg-hour { height: var(--h); position: relative; }
-.tg-hour span { position: absolute; top: -7px; right: 6px; font-size: 0.68rem; color: var(--muted); }
+.tg-hour span { position: absolute; top: -0.55em; right: 6px; font-size: 0.68rem; color: var(--muted); }
 .tg-hour:first-child span { top: 2px; }
 .tg-col {
   position: relative;
@@ -601,7 +609,7 @@ textarea:focus, select:focus { border-color: var(--accent); }
   .member-row { flex-wrap: wrap; }
 
   /* Calendrier semaine/jour plus compact */
-  .tg-body { max-height: 60vh; }
+  .tg { max-height: 64vh; }
   .tg-header, .tg-allday, .tg-body { grid-template-columns: 40px repeat(var(--cols), 1fr); }
   .tg-hour span { font-size: 0.58rem; right: 3px; }
   .tg-event-title { font-size: 0.66rem; }

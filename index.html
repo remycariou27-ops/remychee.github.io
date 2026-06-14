@@ -289,15 +289,12 @@
       </label>
       <div class="form-row">
         <label>
-          <span>Date</span>
+          <span>Date de début</span>
           <input type="date" id="event-date" required>
         </label>
         <label>
-          <span>Type</span>
-          <span class="type-pick">
-            <select id="event-type"></select>
-            <button type="button" class="icon-btn" id="event-add-type" title="Gérer les types">＋</button>
-          </span>
+          <span>Date de fin (optionnel)</span>
+          <input type="date" id="event-end-date">
         </label>
       </div>
       <div class="form-row">
@@ -310,6 +307,13 @@
           <input type="time" id="event-end">
         </label>
       </div>
+      <label>
+        <span>Type</span>
+        <span class="type-pick">
+          <select id="event-type"></select>
+          <button type="button" class="icon-btn" id="event-add-type" title="Gérer les types">＋</button>
+        </span>
+      </label>
       <label>
         <span>Note (optionnel)</span>
         <textarea id="event-note" rows="3" placeholder="Détails…"></textarea>
