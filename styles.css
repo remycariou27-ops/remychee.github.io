@@ -126,9 +126,10 @@ input:focus { border-color: var(--accent); }
 }
 
 /* ---------- Section Administrateurs ---------- */
-.admins-section { margin-bottom: 26px; }
-.admins-title { margin: 0 0 16px; font-size: 1.5rem; }
-.admins-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.admins-section { margin-top: 48px; text-align: center; }
+.admins-title { margin: 0 0 16px; font-size: 1.35rem; }
+.admins-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+.admin-card { width: 220px; }
 .admin-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -569,11 +570,10 @@ textarea:focus, select:focus { border-color: var(--accent); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 680px) {
+  .content { padding: 18px 14px 50px; }
   .summary { grid-template-columns: 1fr; }
   .livret-meta { grid-template-columns: 1fr; }
   .account-card { flex-direction: column; align-items: flex-start; }
-  .topbar { flex-wrap: wrap; }
-  .tabs { order: 3; flex-basis: 100%; }
   .dash-grid { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
   .clock-time { font-size: 2.4rem; }
@@ -581,5 +581,37 @@ textarea:focus, select:focus { border-color: var(--accent); }
   .cal-chip { font-size: 0.62rem; }
   .agenda-item { grid-template-columns: 1fr auto; }
   .agenda-type { display: none; }
-  .tg-body { max-height: 460px; }
+
+  /* Barre du haut compacte */
+  .topbar { flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
+  .panel { padding: 16px; }
+  .tabs {
+    order: 3; flex-basis: 100%; margin-left: 0;
+    overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch;
+  }
+  .tab { flex-shrink: 0; padding: 7px 11px; font-size: 0.9rem; }
+  .user-chip { margin-left: auto; }
+  .chip-name { display: none; } /* on garde l'avatar + le badge de rôle */
+  .role-badge { font-size: 0.6rem; padding: 2px 7px; }
+  #logout-btn { padding: 9px 12px; font-size: 0.85rem; }
+
+  /* Réglages : formulaire en colonne */
+  .member-add { flex-direction: column; align-items: stretch; }
+  .member-add input[type="text"], .member-add select, .member-add button { width: 100%; }
+  .member-row { flex-wrap: wrap; }
+
+  /* Calendrier semaine/jour plus compact */
+  .tg-body { max-height: 60vh; }
+  .tg-header, .tg-allday, .tg-body { grid-template-columns: 40px repeat(var(--cols), 1fr); }
+  .tg-hour span { font-size: 0.58rem; right: 3px; }
+  .tg-event-title { font-size: 0.66rem; }
+  .tg-event-time { font-size: 0.56rem; }
+  .cal-views, .cal-head-actions { flex-wrap: wrap; }
+}
+
+@media (max-width: 420px) {
+  .clock-time { font-size: 2rem; }
+  .weather-temp, .weather-icon { font-size: 2.1rem; }
+  .admin-card { width: 100%; }
+  .topbar-brand span:last-child { font-size: 0.9rem; }
 }
