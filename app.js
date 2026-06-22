@@ -436,10 +436,11 @@
     else if (!c.signed) banner = `<div class="cm-banner pending">⏳ Dossier <strong>en attente</strong> : le contrat doit être signé par le client avant toute prise d'effet.</div>`;
     else banner = `<div class="cm-banner ok">✔ Contrat signé par le client le ${fmtDate(c.signedDate)}.</div>`;
 
+    const docHref = c.document ? docUrl(c.document) : "";
     const doc = c.document
       ? `<div class="cm-doc"><span>📄 ${escapeHtml(c.document.name)}</span>
-           <a class="btn btn-ghost btn-sm" href="${c.document.dataURL}" target="_blank" rel="noopener">Ouvrir</a>
-           <a class="btn btn-ghost btn-sm" href="${c.document.dataURL}" download="${escapeHtml(c.document.name)}">Télécharger</a></div>`
+           <a class="btn btn-ghost btn-sm" href="${docHref}" target="_blank" rel="noopener">Ouvrir</a>
+           <a class="btn btn-ghost btn-sm" href="${docHref}" download="${escapeHtml(c.document.name)}">Télécharger</a></div>`
       : `<div class="cm-doc"><span class="muted">Aucun document joint.</span></div>`;
 
     const rows = c.schedule.map((r) => {
@@ -739,11 +740,20 @@ Le Prêteur — Nordhaven Capital            L'Emprunteur (lu et approuvé, sign
   const fillTemplate = (tpl, data) => tpl.replace(/\{\{(\w+)\}\}/g, (m, k) => (k in data ? data[k] : m));
 
   function docHtml(title, text) {
-    return `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title><style>
-body{font-family:Georgia,'Times New Roman',serif;max-width:780px;margin:0 auto;padding:48px;color:#1a1a1a;line-height:1.55;white-space:pre-wrap}
+    return `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escapeHtml(title)}</title><style>
+html{color-scheme:light}
+body{font-family:Georgia,'Times New Roman',serif;max-width:780px;margin:0 auto;padding:48px;background:#ffffff;color:#1a1a1a;line-height:1.55;white-space:pre-wrap}
 .noprint{margin-top:28px}@media print{.noprint{display:none}}
 button{font-family:sans-serif;background:#111;color:#fff;border:none;padding:10px 18px;border-radius:6px;cursor:pointer}
 </style></head><body>${escapeHtml(text)}<div class="noprint"><button onclick="window.print()">Imprimer / Enregistrer en PDF</button></div></body></html>`;
+  }
+  // Génère une URL ouvrable (Blob, non bloquée par les navigateurs) à partir du texte du contrat.
+  function docUrl(doc) {
+    if (doc && doc.text) {
+      try { return URL.createObjectURL(new Blob([docHtml(doc.name, doc.text)], { type: "text/html" })); }
+      catch { /* fallback ci-dessous */ }
+    }
+    return doc ? doc.dataURL : "";
   }
   function contractMergeData(f) {
     const u = profileById(f.client);
