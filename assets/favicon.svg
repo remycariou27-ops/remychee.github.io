@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Nordhaven Capital">
+  <rect width="100" height="100" rx="22" fill="#111111"/>
+  <g fill="#ffffff">
+    <rect x="27" y="24" width="14" height="52"/>
+    <rect x="59" y="24" width="14" height="52"/>
+    <polygon points="27,24 41,24 73,76 59,76"/>
+    <polygon points="27,24 34,10 41,24"/>
+    <polygon points="59,76 66,90 73,76"/>
+  </g>
+</svg>

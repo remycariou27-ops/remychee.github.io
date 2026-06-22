@@ -3,480 +3,455 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mon Espace</title>
+  <title>Nordhaven Capital — Financement &amp; Prêt</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- ================= LOGIN ================= -->
-  <section id="login-view" class="login-view">
-    <div class="login-card">
-      <div class="brand">
-        <div class="brand-logo">
-          <svg viewBox="0 0 24 24" width="56%" height="56%" fill="currentColor" aria-hidden="true">
-            <rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/>
-            <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/>
-            <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/>
-            <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>
-          </svg>
-        </div>
-        <h1>Mon Espace</h1>
-        <p>Accès réservé — connecte-toi avec Discord</p>
-      </div>
+<!-- ===================================================================
+     SITE PUBLIC
+     =================================================================== -->
+<div id="site" class="site">
 
-      <button id="discord-login" class="btn btn-discord">
-        <svg viewBox="0 -28.5 256 256" fill="currentColor" aria-hidden="true">
-          <path d="M216.856 16.597A208.502 208.502 0 0 0 164.042 0c-2.275 4.113-4.933 9.645-6.766 14.046-19.692-2.961-39.203-2.961-58.533 0-1.832-4.4-4.55-9.933-6.846-14.046a207.809 207.809 0 0 0-52.855 16.638C5.618 67.147-3.443 116.4 1.087 164.956c22.169 16.555 43.653 26.612 64.775 33.193A161.094 161.094 0 0 0 79.735 175.3a136.413 136.413 0 0 1-21.846-10.632 108.636 108.636 0 0 0 5.356-4.237c42.122 19.702 87.89 19.702 129.51 0a131.66 131.66 0 0 0 5.355 4.237 136.07 136.07 0 0 1-21.886 10.653c4.006 8.02 8.638 15.67 13.873 22.848 21.142-6.58 42.646-16.637 64.815-33.213 5.316-56.288-9.08-105.09-38.056-148.36ZM85.474 135.095c-12.645 0-23.015-11.805-23.015-26.18s10.149-26.2 23.015-26.2c12.867 0 23.236 11.804 23.015 26.2.02 14.375-10.148 26.18-23.015 26.18Zm85.051 0c-12.645 0-23.014-11.805-23.014-26.18s10.148-26.2 23.014-26.2c12.867 0 23.236 11.804 23.015 26.2 0 14.375-10.148 26.18-23.015 26.18Z"/>
+  <!-- ---------- NAVBAR ---------- -->
+  <header class="navbar">
+    <a href="#accueil" class="nav-brand" data-nav="accueil">
+      <span class="logo-box"><img src="assets/logo-n.svg" alt="" aria-hidden="true"></span>
+      <span class="brand-text">
+        <strong>NORDHAVEN</strong>
+        <small>CAPITAL</small>
+      </span>
+    </a>
+
+    <nav class="nav-links" id="nav-links">
+      <a href="#accueil"  data-nav="accueil">Accueil</a>
+      <a href="#services" data-nav="services">Services</a>
+      <a href="#devis"    data-nav="devis">Devis</a>
+      <a href="#contact"  data-nav="contact">Contact</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="btn btn-primary" id="open-espace">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
         </svg>
-        <span>Se connecter avec Discord</span>
+        Espace client
       </button>
+      <button class="nav-burger" id="nav-burger" aria-label="Menu">☰</button>
+    </div>
+  </header>
 
-      <p id="login-status" class="muted center" hidden></p>
-      <p id="login-error" class="login-error" hidden></p>
-      <p id="login-config" class="login-error" hidden>
-        Backend non configuré : renseigne <code>SUPABASE_URL</code> et <code>SUPABASE_ANON_KEY</code> dans <code>app.js</code>.
-      </p>
+  <!-- ---------- ACCUEIL ---------- -->
+  <section id="page-accueil" class="page">
+    <div class="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-inner">
+        <span class="eyebrow">Société de financement &amp; de prêt</span>
+        <h1>Le capital qu'il vous faut,<br><span class="gold">au moment où il le faut.</span></h1>
+        <p class="lead">
+          Nordhaven Capital accompagne particuliers et entreprises avec des solutions de
+          financement souples — prêts à la semaine, échéanciers clairs et contrats signés en ligne.
+        </p>
+        <div class="hero-cta">
+          <a href="#devis" class="btn btn-primary btn-lg" data-nav="devis">Demander un devis</a>
+          <a href="#services" class="btn btn-ghost btn-lg" data-nav="services">Nos services</a>
+        </div>
+        <div class="hero-stats">
+          <div><strong>7 j</strong><span>Réponse rapide</span></div>
+          <div><strong>100 %</strong><span>En ligne</span></div>
+          <div><strong>0</strong><span>Frais cachés</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Pourquoi Nordhaven&nbsp;?</h2>
+        <p class="muted">Une approche simple, transparente et rapide du financement.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature">
+          <div class="feature-ico">⚡</div>
+          <h3>Rapide</h3>
+          <p>Déposez une demande de devis en deux minutes et obtenez une proposition adaptée.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-ico">📑</div>
+          <h3>Transparent</h3>
+          <p>Échéanciers détaillés : capital, intérêts et reste à payer, semaine par semaine.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-ico">✍️</div>
+          <h3>Sécurisé</h3>
+          <p>Chaque prêt est encadré par un contrat. Tant qu'il n'est pas signé, le dossier reste en attente.</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- ================= APP ================= -->
-  <div id="app" class="app" hidden>
-    <header class="topbar">
-      <div class="topbar-brand">
-        <span class="brand-logo small">
-          <svg viewBox="0 0 24 24" width="56%" height="56%" fill="currentColor" aria-hidden="true">
-            <rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/>
-            <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/>
-            <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/>
-            <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>
-          </svg>
-        </span>
-        <span>Mon Espace</span>
+  <!-- ---------- SERVICES ---------- -->
+  <section id="page-services" class="page" hidden>
+    <div class="section">
+      <div class="section-head">
+        <h2>Nos services</h2>
+        <p class="muted">Des solutions pensées pour vos besoins.</p>
       </div>
-      <nav class="tabs" id="main-tabs">
-        <button class="tab active" data-tab="accueil">Accueil</button>
-        <button class="tab" data-tab="organisation">Organisation</button>
-        <button class="tab" data-tab="finances">Finances</button>
-        <button class="tab" data-tab="reglages" id="tab-reglages-btn" hidden>Réglages</button>
-      </nav>
-      <span id="user-chip" class="user-chip"></span>
-      <button id="logout-btn" class="btn btn-ghost">Déconnexion</button>
-    </header>
-
-    <main class="content">
-
-      <!-- ============ ACCUEIL / DASHBOARD ============ -->
-      <section id="view-accueil" class="view">
-        <div class="dash-grid">
-
-          <div class="dash-card clock-card">
-            <div class="clock-time" id="dash-time">--:--:--</div>
-            <div class="clock-date" id="dash-date">—</div>
+      <div class="service-grid">
+        <article class="service-card available">
+          <div class="service-top">
+            <div class="service-ico">💰</div>
+            <span class="pill active">Disponible</span>
           </div>
-
-          <div class="dash-card weather-card">
-            <div class="dash-card-head">
-              <h3>Météo &middot; Aix-les-Bains</h3>
-              <button class="btn btn-ghost btn-sm" id="weather-refresh" title="Actualiser">↻</button>
-            </div>
-            <div id="weather-body" class="weather-body"><p class="muted">Chargement…</p></div>
-          </div>
-
-          <div class="dash-card">
-            <div class="dash-card-head"><h3>Tâches du jour</h3></div>
-            <div id="dash-tasks"></div>
-          </div>
-
-          <div class="dash-card">
-            <div class="dash-card-head"><h3>Prochains rendez-vous</h3></div>
-            <div id="dash-events"></div>
-          </div>
-
-          <div class="dash-card">
-            <div class="dash-card-head"><h3>Patrimoine</h3></div>
-            <div id="dash-finance"></div>
-          </div>
-
-          <div class="dash-card">
-            <div class="dash-card-head"><h3 id="dash-cal-title">Calendrier</h3></div>
-            <div id="dash-calendar" class="mini-cal"></div>
-          </div>
-
-        </div>
-
-        <section class="admins-section">
-          <h2 class="admins-title">Administrateurs</h2>
-          <div id="admins-list" class="admins-list"></div>
-        </section>
-      </section>
-
-      <!-- ============ ORGANISATION ============ -->
-      <section id="view-organisation" class="view" hidden>
-        <nav class="subtabs">
-          <button class="subtab active" data-sub="notes">Bloc-notes</button>
-          <button class="subtab" data-sub="todo">To-do</button>
-          <button class="subtab" data-sub="calendrier">Calendrier</button>
-          <button class="subtab" data-sub="agenda">Agenda</button>
-        </nav>
-
-        <!-- Bloc-notes -->
-        <div id="sub-notes" class="subview">
-          <div class="panel">
-            <div class="panel-head">
-              <h2>Bloc-notes</h2>
-              <button class="btn btn-primary" id="add-note-btn">+ Nouvelle note</button>
-            </div>
-            <div id="notes-list" class="notes-list"></div>
-            <p id="notes-empty" class="muted">Aucune note pour le moment.</p>
-          </div>
-        </div>
-
-        <!-- To-do -->
-        <div id="sub-todo" class="subview" hidden>
-          <div class="panel">
-            <div class="panel-head"><h2>To-do liste</h2></div>
-            <form id="todo-add-form" class="todo-add">
-              <input type="text" id="todo-add-text" placeholder="Nouvelle tâche…" required>
-              <input type="date" id="todo-add-date" title="Échéance (optionnel)">
-              <button type="submit" class="btn btn-primary">Ajouter</button>
-            </form>
-            <div id="todo-list" class="todo-list"></div>
-            <p id="todo-empty" class="muted">Aucune tâche. Ajoutez-en une.</p>
-          </div>
-        </div>
-
-        <!-- Calendrier -->
-        <div id="sub-calendrier" class="subview" hidden>
-          <div class="panel">
-            <div class="panel-head cal-head">
-              <div class="cal-nav">
-                <button class="btn btn-ghost btn-sm" id="cal-prev">‹</button>
-                <h2 id="cal-title">—</h2>
-                <button class="btn btn-ghost btn-sm" id="cal-next">›</button>
-              </div>
-              <div class="cal-head-actions">
-                <div class="cal-views">
-                  <button class="cal-view-btn active" data-view="month">Mois</button>
-                  <button class="cal-view-btn" data-view="week">Semaine</button>
-                  <button class="cal-view-btn" data-view="day">Jour</button>
-                </div>
-                <button class="btn btn-ghost btn-sm" id="cal-today">Aujourd'hui</button>
-                <button class="btn btn-ghost btn-sm" id="cal-types">Types</button>
-                <button class="btn btn-primary btn-sm" id="add-event-btn">+ Événement</button>
-              </div>
-            </div>
-            <div id="calendar" class="calendar"></div>
-          </div>
-        </div>
-
-        <!-- Agenda -->
-        <div id="sub-agenda" class="subview" hidden>
-          <div class="panel">
-            <div class="panel-head">
-              <h2>Agenda</h2>
-              <button class="btn btn-primary" id="add-event-btn2">+ Événement</button>
-            </div>
-            <div id="agenda-list"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============ FINANCES ============ -->
-      <section id="view-finances" class="view" hidden>
-        <div class="summary">
-          <div class="summary-card">
-            <span class="summary-label">Compte courant</span>
-            <span class="summary-value" id="sum-bank">—</span>
-          </div>
-          <div class="summary-card">
-            <span class="summary-label">Total épargne (livrets)</span>
-            <span class="summary-value" id="sum-livrets">—</span>
-          </div>
-          <div class="summary-card highlight">
-            <span class="summary-label">Patrimoine total</span>
-            <span class="summary-value" id="sum-total">—</span>
-          </div>
-        </div>
-
-        <nav class="subtabs">
-          <button class="subtab active" data-sub="compte">Mon compte</button>
-          <button class="subtab" data-sub="livrets">Mes livrets</button>
-          <button class="subtab" data-sub="budget">Budget</button>
-        </nav>
-
-        <div id="sub-compte" class="subview">
-          <div class="panel">
-            <div class="panel-head"><h2>État de mon compte en banque</h2></div>
-            <div id="bank-body"></div>
-          </div>
-        </div>
-
-        <div id="sub-livrets" class="subview" hidden>
-          <div class="panel">
-            <div class="panel-head">
-              <h2>Mes livrets</h2>
-              <button id="add-livret-btn" class="btn btn-primary">+ Ajouter un livret</button>
-            </div>
-            <div id="livrets-list" class="livrets-list"></div>
-            <p id="livrets-empty" class="muted">Aucun livret pour le moment. Ajoutez-en un.</p>
-          </div>
-        </div>
-
-        <!-- ---- Budget mensuel ---- -->
-        <div id="sub-budget" class="subview" hidden>
-          <div class="panel">
-            <div class="panel-head"><h2>Budget mensuel</h2></div>
-
-            <label class="budget-income">
-              <span>Revenu du mois (€)</span>
-              <input type="number" id="budget-income" step="0.01" min="0" placeholder="0.00">
-            </label>
-
-            <div id="budget-summary" class="budget-summary"></div>
-
-            <h3 class="budget-h">Catégories (budget alloué)</h3>
-            <form id="cat-add-form" class="budget-add">
-              <input type="color" id="cat-add-color" value="#6aa6ff" title="Couleur">
-              <input type="text" id="cat-add-name" placeholder="ex : Courses" required>
-              <input type="number" id="cat-add-amount" step="0.01" min="0" placeholder="€ alloués">
-              <button type="submit" class="btn btn-primary">Ajouter</button>
-            </form>
-            <div id="budget-cats" class="budget-list"></div>
-
-            <h3 class="budget-h">Abonnements / dépenses fixes</h3>
-            <form id="fixed-add-form" class="budget-add">
-              <input type="text" id="fixed-add-name" placeholder="ex : Netflix" required>
-              <input type="number" id="fixed-add-amount" step="0.01" min="0" placeholder="€ / mois" required>
-              <button type="submit" class="btn btn-primary">Ajouter</button>
-            </form>
-            <div id="budget-fixed" class="budget-list"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============ RÉGLAGES (admin) ============ -->
-      <section id="view-reglages" class="view" hidden>
-        <div class="panel">
-          <div class="panel-head"><h2>Réglages — Membres &amp; rôles</h2></div>
-          <p class="muted">
-            Ajoute des personnes par leur identifiant Discord et donne-leur un rôle.
-            Les rôles sont partagés : chacun les voit depuis son propre appareil.
+          <h3>Financement / Prêt</h3>
+          <p>
+            Prêt à la semaine avec échéances constantes. Vous empruntez un capital, nous établissons
+            un échéancier clair et un contrat à signer en ligne.
           </p>
-          <form id="member-add-form" class="member-add">
-            <input type="text" id="member-id" placeholder="ID Discord (ex : 690680975188820018)" required>
-            <input type="text" id="member-label" placeholder="Nom / pseudo">
-            <select id="member-role">
-              <option value="membre">Membre</option>
-              <option value="vip">VIP</option>
-              <option value="admin">Administrateur</option>
-            </select>
-            <button type="submit" class="btn btn-primary">Ajouter</button>
-          </form>
-          <div id="members-list" class="members-list"></div>
-          <p id="members-empty" class="muted">Aucun membre ajouté pour le moment.</p>
-        </div>
-      </section>
+          <ul class="service-list">
+            <li>Prêt à la semaine</li>
+            <li>Échéancier hebdomadaire détaillé</li>
+            <li>Contrat signé en ligne</li>
+            <li>Devis gratuit et sans engagement</li>
+          </ul>
+          <a href="#devis" class="btn btn-primary btn-block" data-nav="devis">Demander un devis</a>
+        </article>
 
-    </main>
-  </div>
-
-  <!-- ================= MODALE NOTE ================= -->
-  <div id="note-modal" class="modal-backdrop" hidden>
-    <form id="note-form" class="modal">
-      <h3 id="note-modal-title">Nouvelle note</h3>
-      <input type="hidden" id="note-id">
-      <label>
-        <span>Titre</span>
-        <input type="text" id="note-title" placeholder="Titre de la note" required>
-      </label>
-      <label>
-        <span>Contenu</span>
-        <textarea id="note-body" rows="6" placeholder="Votre texte…"></textarea>
-      </label>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" id="note-cancel">Annuler</button>
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-      </div>
-    </form>
-  </div>
-
-  <!-- ================= MODALE TODO ================= -->
-  <div id="todo-modal" class="modal-backdrop" hidden>
-    <form id="todo-form" class="modal">
-      <h3>Modifier la tâche</h3>
-      <input type="hidden" id="todo-id">
-      <label>
-        <span>Tâche</span>
-        <input type="text" id="todo-text" required>
-      </label>
-      <label>
-        <span>Échéance (optionnel)</span>
-        <input type="date" id="todo-date">
-      </label>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" id="todo-cancel">Annuler</button>
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-      </div>
-    </form>
-  </div>
-
-  <!-- ================= MODALE ÉVÉNEMENT ================= -->
-  <div id="event-modal" class="modal-backdrop" hidden>
-    <form id="event-form" class="modal">
-      <h3 id="event-modal-title">Nouvel événement</h3>
-      <input type="hidden" id="event-id">
-      <label>
-        <span>Titre</span>
-        <input type="text" id="event-title" placeholder="ex : Rendez-vous dentiste" required>
-      </label>
-      <div class="form-row">
-        <label>
-          <span>Date de début</span>
-          <input type="date" id="event-date" required>
-        </label>
-        <label>
-          <span>Date de fin (optionnel)</span>
-          <input type="date" id="event-end-date">
-        </label>
-      </div>
-      <div class="form-row">
-        <label>
-          <span>Heure de début</span>
-          <input type="time" id="event-start">
-        </label>
-        <label>
-          <span>Heure de fin</span>
-          <input type="time" id="event-end">
-        </label>
-      </div>
-      <label>
-        <span>Type</span>
-        <span class="type-pick">
-          <select id="event-type"></select>
-          <button type="button" class="icon-btn" id="event-add-type" title="Gérer les types">＋</button>
-        </span>
-      </label>
-      <label>
-        <span>Note (optionnel)</span>
-        <textarea id="event-note" rows="3" placeholder="Détails…"></textarea>
-      </label>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-danger" id="event-delete" hidden>Supprimer</button>
-        <button type="button" class="btn btn-ghost" id="event-cancel">Annuler</button>
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-      </div>
-    </form>
-  </div>
-
-  <!-- ================= MODALE TYPES D'ÉVÉNEMENT ================= -->
-  <div id="type-modal" class="modal-backdrop" hidden>
-    <div class="modal">
-      <h3>Types d'événement</h3>
-      <p class="muted">Renommez, choisissez la couleur, ou ajoutez vos propres types.</p>
-      <div id="type-list" class="type-list"></div>
-      <form id="type-add-form" class="type-add">
-        <input type="color" id="type-add-color" value="#2ec27e" title="Couleur">
-        <input type="text" id="type-add-name" placeholder="Nouveau type…" required>
-        <button type="submit" class="btn btn-primary">Ajouter</button>
-      </form>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" id="type-close">Fermer</button>
+        <article class="service-card soon">
+          <div class="service-top">
+            <div class="service-ico">🏠</div>
+            <span class="pill pending">À venir…</span>
+          </div>
+          <h3>Location</h3>
+          <p>
+            Une offre de location est en préparation. Revenez bientôt — ou contactez-nous pour être
+            informé du lancement.
+          </p>
+          <ul class="service-list muted">
+            <li>Bientôt disponible</li>
+          </ul>
+          <a href="#contact" class="btn btn-ghost btn-block" data-nav="contact">Être informé</a>
+        </article>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- ================= MODALE LIVRET ================= -->
-  <div id="livret-modal" class="modal-backdrop" hidden>
-    <form id="livret-form" class="modal">
-      <h3 id="livret-modal-title">Ajouter un livret</h3>
-      <input type="hidden" id="livret-id">
-      <label>
-        <span>Nom du livret</span>
-        <input type="text" id="livret-name" placeholder="ex : Livret A" required>
-      </label>
-      <label>
-        <span>Montant actuel (€)</span>
-        <input type="number" id="livret-amount" step="0.01" min="0" placeholder="0.00" required>
-      </label>
-      <label>
-        <span>Taux de rendement (%)</span>
-        <input type="number" id="livret-rate" step="0.01" min="0" placeholder="ex : 3" required>
-      </label>
-      <label>
-        <span>Plafond / limite (€)</span>
-        <input type="number" id="livret-plafond" step="0.01" min="0" placeholder="ex : 22950">
-      </label>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" id="livret-cancel">Annuler</button>
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
+  <!-- ---------- DEVIS ---------- -->
+  <section id="page-devis" class="page" hidden>
+    <div class="section narrow">
+      <div class="section-head">
+        <h2>Demander un devis</h2>
+        <p class="muted">Remplissez le formulaire, un conseiller Nordhaven vous recontacte.</p>
       </div>
-    </form>
-  </div>
 
-  <!-- ================= MODALE COMPTE (créer / modifier) ================= -->
-  <div id="bank-modal" class="modal-backdrop" hidden>
-    <form id="bank-form" class="modal">
-      <h3 id="bank-modal-title">Créer mon compte</h3>
-      <label>
-        <span>Nom du compte</span>
-        <input type="text" id="bank-name" placeholder="ex : Compte courant BNP" required>
-      </label>
-      <label>
-        <span>Solde (€)</span>
-        <input type="number" id="bank-balance" step="0.01" placeholder="0.00" required>
-      </label>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" id="bank-cancel">Annuler</button>
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
+      <form id="devis-form" class="form-card">
+        <div class="form-grid">
+          <label><span>Prénom</span><input type="text" id="d-prenom" required></label>
+          <label><span>Nom</span><input type="text" id="d-nom" required></label>
+          <label><span>Téléphone</span><input type="tel" id="d-tel" placeholder="ex : 555-0192" required></label>
+          <label><span>Lien du profil Life</span><input type="url" id="d-life" placeholder="https://..."></label>
+          <label class="full"><span>Sujet</span><input type="text" id="d-sujet" placeholder="ex : Prêt de 15 000€" required></label>
+          <label class="full"><span>Message</span><textarea id="d-message" rows="5" placeholder="Décrivez votre besoin (montant, durée souhaitée…)"></textarea></label>
+        </div>
+        <label class="check">
+          <input type="checkbox" id="d-public">
+          <span>Rendre ma demande <strong>publique</strong> (visible dans les devis publics ci-dessous). Sinon, elle reste <strong>privée</strong> (vous &amp; Nordhaven uniquement).</span>
+        </label>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Envoyer ma demande</button>
+        <p class="form-note">Vous êtes connecté&nbsp;? Votre demande sera rattachée à votre compte.</p>
+      </form>
+
+      <div class="section-head" style="margin-top:42px">
+        <h2>Devis publics</h2>
+        <p class="muted">Demandes rendues publiques par leurs auteurs et traitées par Nordhaven.</p>
       </div>
-    </form>
-  </div>
+      <div id="public-devis" class="public-devis"></div>
+      <p id="public-devis-empty" class="empty" hidden>Aucun devis public pour le moment.</p>
+    </div>
+  </section>
 
-  <!-- ================= MODALE MOUVEMENT ================= -->
-  <div id="move-modal" class="modal-backdrop" hidden>
-    <form id="move-form" class="modal">
-      <h3 id="move-title">Mouvement</h3>
-      <input type="hidden" id="move-target">
-      <input type="hidden" id="move-id">
-      <input type="hidden" id="move-direction">
-      <label>
-        <span>Montant (€)</span>
-        <input type="number" id="move-amount" step="0.01" min="0" placeholder="0.00" required>
-      </label>
-      <label>
-        <span>Raison</span>
-        <input type="text" id="move-reason" placeholder="ex : Salaire, Courses, Virement...">
-      </label>
-      <p id="move-warning" class="login-error" hidden></p>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" id="move-cancel">Annuler</button>
-        <button type="submit" class="btn btn-primary">Valider</button>
+  <!-- ---------- CONTACT ---------- -->
+  <section id="page-contact" class="page" hidden>
+    <div class="section narrow">
+      <div class="section-head">
+        <h2>Nous contacter</h2>
+        <p class="muted">Une question&nbsp;? Écrivez-nous, nous revenons vers vous rapidement.</p>
       </div>
-    </form>
-  </div>
+      <form id="contact-form" class="form-card">
+        <div class="form-grid">
+          <label><span>Prénom</span><input type="text" id="ct-prenom" required></label>
+          <label><span>Nom</span><input type="text" id="ct-nom" required></label>
+          <label class="full"><span>Numéro</span><input type="tel" id="ct-num" placeholder="ex : 555-0192" required></label>
+          <label class="full"><span>Sujet</span><input type="text" id="ct-sujet" required></label>
+          <label class="full"><span>Message</span><textarea id="ct-message" rows="5" required></textarea></label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Envoyer le message</button>
+      </form>
+    </div>
+  </section>
 
-  <!-- ================= MODALE CONFIRMATION PAR IDENTIFIANTS ================= -->
-  <div id="confirm-modal" class="modal-backdrop" hidden>
-    <form id="confirm-form" class="modal">
-      <h3 id="confirm-title">Confirmer la suppression</h3>
-      <p id="confirm-text" class="muted"></p>
-      <label>
-        <span>Identifiant</span>
-        <input type="text" id="confirm-user" autocomplete="off" required>
-      </label>
-      <label>
-        <span>Mot de passe</span>
-        <input type="password" id="confirm-pass" autocomplete="off" required>
-      </label>
-      <p id="confirm-warning" class="login-error" hidden></p>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" id="confirm-cancel">Annuler</button>
-        <button type="submit" class="btn btn-danger-solid">Supprimer</button>
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo-box small"><img src="assets/logo-n.svg" alt="" aria-hidden="true"></span>
+        <div>
+          <strong>Nordhaven Capital</strong>
+          <p class="muted">Solutions de financement &amp; de prêt.</p>
+        </div>
       </div>
-    </form>
-  </div>
+      <nav class="footer-links">
+        <a href="#services" data-nav="services">Services</a>
+        <a href="#devis" data-nav="devis">Devis</a>
+        <a href="#contact" data-nav="contact">Contact</a>
+        <button class="link-btn" id="footer-espace">Espace client</button>
+      </nav>
+    </div>
+    <p class="footer-foot">Espace fictif — usage roleplay uniquement.</p>
+  </footer>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js"></script>
+<!-- ===================================================================
+     ESPACE CLIENT / AUTH
+     =================================================================== -->
+<section id="auth-view" class="auth-view" hidden>
+  <div class="auth-card">
+    <button class="back-link" id="auth-back">← Retour au site</button>
+    <div class="brand">
+      <span class="logo-box big"><img src="assets/logo-n.svg" alt="" aria-hidden="true"></span>
+      <h1>Nordhaven&nbsp;Capital</h1>
+      <p class="tagline">Espace client</p>
+    </div>
+
+    <form id="login-form" class="auth-form">
+      <h2>Connexion à votre espace</h2>
+      <label><span>Identifiant</span>
+        <input type="text" id="login-user" autocomplete="username" placeholder="ex : prenom_nom" required></label>
+      <label><span>Mot de passe</span>
+        <input type="password" id="login-pass" autocomplete="current-password" required></label>
+      <p id="login-error" class="form-error" hidden></p>
+      <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+      <p class="switch-line">Pas encore client ?
+        <button type="button" class="link-btn" id="go-register">Créer un compte</button></p>
+    </form>
+
+    <form id="register-form" class="auth-form" hidden>
+      <h2>Créer un compte client</h2>
+      <label><span>Nom complet</span>
+        <input type="text" id="reg-name" placeholder="ex : Jean Dupont" required></label>
+      <label><span>Identifiant (format <code>prenom_nom</code>)</span>
+        <input type="text" id="reg-user" autocomplete="username" placeholder="ex : jean_dupont" required></label>
+      <label><span>Mot de passe</span>
+        <input type="password" id="reg-pass" autocomplete="new-password" minlength="3" required></label>
+      <p id="reg-error" class="form-error" hidden></p>
+      <button type="submit" class="btn btn-primary btn-block">Créer mon compte</button>
+      <p class="switch-line">Déjà client ?
+        <button type="button" class="link-btn" id="go-login">Se connecter</button></p>
+    </form>
+
+    <p class="auth-foot">Espace fictif — usage roleplay uniquement.</p>
+  </div>
+</section>
+
+<!-- ===================================================================
+     PORTAIL (client + admin)
+     =================================================================== -->
+<div id="app" class="app" hidden>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="logo-box small"><img src="assets/logo-n.svg" alt="" aria-hidden="true"></span>
+      <span>Nordhaven Capital</span>
+    </div>
+    <nav class="tabs" id="main-tabs">
+      <button class="tab active" data-tab="dossiers">Mes dossiers</button>
+      <button class="tab" data-tab="admin" id="tab-admin" hidden>Administration</button>
+    </nav>
+    <span id="user-chip" class="user-chip"></span>
+    <button id="goto-site" class="btn btn-ghost btn-sm">Voir le site</button>
+    <button id="logout-btn" class="btn btn-ghost btn-sm">Déconnexion</button>
+  </header>
+
+  <main class="content">
+
+    <!-- ESPACE CLIENT -->
+    <section id="view-dossiers" class="view">
+      <div class="page-head">
+        <div>
+          <h1 id="client-hello">Bonjour</h1>
+          <p class="muted" id="client-sub">Vos contrats de prêt</p>
+        </div>
+      </div>
+      <div class="summary" id="client-summary"></div>
+
+      <div class="panel" id="client-devis-panel" hidden>
+        <div class="panel-head"><h2>Mes demandes de devis</h2></div>
+        <div id="client-devis" class="devis-list"></div>
+      </div>
+
+      <div id="client-contracts" class="contracts"></div>
+      <p id="client-empty" class="empty" hidden>
+        Vous n'avez aucun contrat de prêt pour le moment.
+        Un conseiller Nordhaven doit en créer un pour vous.
+      </p>
+    </section>
+
+    <!-- ADMINISTRATION -->
+    <section id="view-admin" class="view" hidden>
+      <nav class="subtabs">
+        <button class="subtab active" data-sub="overview">Vue d'ensemble</button>
+        <button class="subtab" data-sub="devis">Devis <span class="badge" id="badge-devis" hidden></span></button>
+        <button class="subtab" data-sub="messages">Messages <span class="badge" id="badge-msg" hidden></span></button>
+        <button class="subtab" data-sub="clients">Clients</button>
+        <button class="subtab" data-sub="newcontract">Nouveau contrat</button>
+        <button class="subtab" data-sub="template">Modèle</button>
+        <button class="subtab" data-sub="archives">Archives</button>
+      </nav>
+
+      <!-- Vue d'ensemble -->
+      <div id="sub-overview" class="subview">
+        <div class="summary" id="admin-summary"></div>
+        <div class="panel">
+          <div class="panel-head"><h2>Tous les contrats</h2></div>
+          <div id="admin-all-contracts" class="contracts"></div>
+          <p id="admin-empty" class="empty" hidden>Aucun contrat enregistré.</p>
+        </div>
+      </div>
+
+      <!-- Devis -->
+      <div id="sub-devis" class="subview" hidden>
+        <div class="panel">
+          <div class="panel-head"><h2>Demandes de devis</h2></div>
+          <div id="admin-devis" class="devis-list"></div>
+          <p id="admin-devis-empty" class="empty" hidden>Aucune demande de devis.</p>
+        </div>
+      </div>
+
+      <!-- Messages contact -->
+      <div id="sub-messages" class="subview" hidden>
+        <div class="panel">
+          <div class="panel-head"><h2>Messages de contact</h2></div>
+          <div id="admin-messages" class="msg-list"></div>
+          <p id="admin-messages-empty" class="empty" hidden>Aucun message.</p>
+        </div>
+      </div>
+
+      <!-- Clients -->
+      <div id="sub-clients" class="subview" hidden>
+        <div class="panel">
+          <div class="panel-head"><h2>Comptes clients</h2></div>
+          <div id="admin-clients" class="clients-list"></div>
+        </div>
+      </div>
+
+      <!-- Nouveau contrat -->
+      <div id="sub-newcontract" class="subview" hidden>
+        <div class="panel">
+          <div class="panel-head"><h2>Établir un nouveau contrat de prêt</h2></div>
+          <form id="contract-form" class="contract-form">
+            <div class="form-grid">
+              <label><span>Client</span><select id="c-client" required></select></label>
+              <label><span>Intitulé du prêt</span><input type="text" id="c-label" placeholder="ex : Prêt automobile" required></label>
+              <label><span>Capital emprunté (€)</span><input type="number" id="c-principal" step="0.01" min="1" placeholder="ex : 15000" required></label>
+              <label><span>Taux d'intérêt par semaine (%)</span><input type="number" id="c-rate" step="0.01" min="0" placeholder="ex : 5" required></label>
+              <label><span>Durée (nombre de semaines)</span><input type="number" id="c-weeks" step="1" min="1" placeholder="ex : 12" required></label>
+              <label><span>Date de 1re échéance</span><input type="date" id="c-start" required></label>
+            </div>
+
+            <div class="doc-field">
+              <div class="doc-head">
+                <span class="doc-title">Document du contrat (obligatoire)</span>
+                <button type="button" class="btn btn-ghost btn-sm" id="c-doc-gen">⟳ Générer depuis le modèle</button>
+              </div>
+              <p class="doc-help">
+                Le contrat est généré à partir de votre <button type="button" class="link-btn" id="c-doc-editmodel">modèle modifiable</button>.
+                Vous pouvez l'ajuster ci-dessous avant de créer le dossier.
+              </p>
+              <textarea id="c-doc-content" rows="12" class="doc-editor"
+                placeholder="Cliquez sur « Générer depuis le modèle » puis ajustez le texte si besoin…"></textarea>
+            </div>
+
+            <div id="c-preview" class="contract-preview"></div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" id="c-simulate">Simuler</button>
+              <button type="submit" class="btn btn-primary">Créer le contrat</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Modèle -->
+      <div id="sub-template" class="subview" hidden>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Modèle de contrat</h2>
+            <div class="actions-group">
+              <button class="btn btn-ghost btn-sm" id="tpl-reset">Réinitialiser</button>
+              <button class="btn btn-primary btn-sm" id="tpl-save">Enregistrer le modèle</button>
+            </div>
+          </div>
+          <p class="muted">
+            Modifiez librement le texte. Les <strong>variables</strong> entre doubles accolades seront
+            remplacées automatiquement par les données du contrat lors de la création.
+          </p>
+          <div class="tpl-vars" id="tpl-vars"></div>
+          <textarea id="tpl-editor" rows="20" class="doc-editor"></textarea>
+        </div>
+      </div>
+
+      <!-- Archives -->
+      <div id="sub-archives" class="subview" hidden>
+        <div class="panel">
+          <div class="panel-head"><h2>Dossiers archivés</h2></div>
+          <div id="admin-archives" class="contracts"></div>
+          <p id="archives-empty" class="empty" hidden>Aucun dossier archivé.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- MODALES -->
+<div id="contract-modal" class="modal-backdrop" hidden>
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="cm-title">Détail du contrat</h3>
+      <button type="button" class="icon-btn" id="cm-close" title="Fermer">✕</button>
+    </div>
+    <div id="cm-body"></div>
+  </div>
+</div>
+
+<div id="devis-modal" class="modal-backdrop" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="dm-title">Demande de devis</h3>
+      <button type="button" class="icon-btn" id="dm-close" title="Fermer">✕</button>
+    </div>
+    <div id="dm-body"></div>
+  </div>
+</div>
+
+<div id="confirm-modal" class="modal-backdrop" hidden>
+  <div class="modal">
+    <h3 id="confirm-title">Confirmer</h3>
+    <p id="confirm-text" class="muted"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="confirm-cancel">Annuler</button>
+      <button type="button" class="btn btn-danger-solid" id="confirm-ok">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<!-- Bannière de configuration (si Supabase pas encore renseigné) -->
+<div id="config-banner" class="config-banner" hidden>
+  ⚠️ Configuration requise : renseignez votre projet Supabase dans <code>config.js</code> (voir <code>SETUP.md</code>).
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
