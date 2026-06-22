@@ -154,20 +154,9 @@
           <label class="full"><span>Sujet</span><input type="text" id="d-sujet" placeholder="ex : Prêt de 15 000€" required></label>
           <label class="full"><span>Message</span><textarea id="d-message" rows="5" placeholder="Décrivez votre besoin (montant, durée souhaitée…)"></textarea></label>
         </div>
-        <label class="check">
-          <input type="checkbox" id="d-public">
-          <span>Rendre ma demande <strong>publique</strong> (visible dans les devis publics ci-dessous). Sinon, elle reste <strong>privée</strong> (vous &amp; Nordhaven uniquement).</span>
-        </label>
         <button type="submit" class="btn btn-primary btn-lg btn-block">Envoyer ma demande</button>
-        <p class="form-note">Vous êtes connecté&nbsp;? Votre demande sera rattachée à votre compte.</p>
+        <p class="form-note">Un conseiller Nordhaven vous rappellera au numéro indiqué.</p>
       </form>
-
-      <div class="section-head" style="margin-top:42px">
-        <h2>Devis publics</h2>
-        <p class="muted">Demandes rendues publiques par leurs auteurs et traitées par Nordhaven.</p>
-      </div>
-      <div id="public-devis" class="public-devis"></div>
-      <p id="public-devis-empty" class="empty" hidden>Aucun devis public pour le moment.</p>
     </div>
   </section>
 
@@ -419,16 +408,6 @@
       <button type="button" class="icon-btn" id="cm-close" title="Fermer">✕</button>
     </div>
     <div id="cm-body"></div>
-  </div>
-</div>
-
-<div id="devis-modal" class="modal-backdrop" hidden>
-  <div class="modal">
-    <div class="modal-head">
-      <h3 id="dm-title">Demande de devis</h3>
-      <button type="button" class="icon-btn" id="dm-close" title="Fermer">✕</button>
-    </div>
-    <div id="dm-body"></div>
   </div>
 </div>
 

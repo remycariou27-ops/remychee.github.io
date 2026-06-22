@@ -61,7 +61,7 @@
 
   /* ---------------- état + caches ---------------- */
   let session = null; // {id, username, name, role}
-  const DB = { contracts: [], devis: [], contacts: [], profiles: [], publicDevis: [] };
+  const DB = { contracts: [], devis: [], contacts: [], profiles: [] };
 
   const profileById = (id) => DB.profiles.find((p) => p.id === id);
   const clientName = (id) => profileById(id)?.full_name || profileById(id)?.username || "—";
@@ -161,7 +161,6 @@
     $$(".page").forEach((p) => (p.hidden = p.id !== "page-" + page));
     $$("#nav-links a").forEach((a) => a.classList.toggle("active", a.dataset.nav === page));
     $("#nav-links").classList.remove("open");
-    if (page === "devis") loadPublicDevis();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   $$("[data-nav]").forEach((el) => el.addEventListener("click", (e) => { e.preventDefault(); navigate(el.dataset.nav); }));
@@ -197,38 +196,14 @@
       prenom: $("#d-prenom").value.trim(), nom: $("#d-nom").value.trim(),
       tel: $("#d-tel").value.trim(), life: $("#d-life").value.trim(),
       sujet: $("#d-sujet").value.trim(), message: $("#d-message").value.trim(),
-      is_public: $("#d-public").checked, from_id: session ? session.id : null,
+      from_id: session ? session.id : null,
     };
     const { error } = await sb.from("devis").insert(payload);
     if (error) return toast("Erreur à l'envoi : " + error.message);
     e.target.reset();
-    toast("Demande de devis envoyée — un conseiller vous recontacte.");
-    loadPublicDevis();
+    toast("Demande de devis envoyée — un conseiller vous rappellera.");
     if (session && session.role === "admin") refresh();
   });
-
-  async function loadPublicDevis() {
-    if (!sb) return;
-    const { data } = await sb.from("devis").select("*").eq("is_public", true).order("created_at", { ascending: false });
-    DB.publicDevis = (data || []).map(normDevis);
-    renderPublicDevis();
-  }
-  function renderPublicDevis() {
-    const wrap = $("#public-devis"), empty = $("#public-devis-empty");
-    if (!wrap) return;
-    const pub = DB.publicDevis;
-    empty.hidden = pub.length > 0;
-    wrap.innerHTML = pub.map((d) => {
-      const statusPill = d.status === "quoted" ? `<span class="pill pub">Devis proposé</span>`
-        : d.status === "closed" ? `<span class="pill arch">Clôturé</span>`
-        : `<span class="pill new">En cours d'étude</span>`;
-      const quote = d.quote ? `<div class="pd-quote"><strong>Réponse Nordhaven :</strong><br>${escapeHtml(d.quote)}</div>` : "";
-      return `<div class="pd-card">
-        <div class="pd-head"><span class="pd-subject">${escapeHtml(d.sujet || "Demande de devis")}</span>${statusPill}</div>
-        <div class="lr-meta">${escapeHtml(d.prenom)} ${escapeHtml(d.nom)} · ${fmtDateTime(d.createdAt)}</div>
-        ${d.message ? `<p class="pd-msg">${escapeHtml(d.message)}</p>` : ""}${quote}</div>`;
-    }).join("");
-  }
 
   /* ============================================================
      AUTH (Supabase)
@@ -608,46 +583,31 @@
 
   /* ---------------- devis (admin) ---------------- */
   function devisRow(d, admin) {
-    const statusPill = d.status === "quoted" ? `<span class="pill pub">Devis proposé</span>`
-      : d.status === "closed" ? `<span class="pill arch">Clôturé</span>` : `<span class="pill new">Nouveau</span>`;
-    const visPill = d.public ? `<span class="pill pub">Public</span>` : `<span class="pill priv">Privé</span>`;
+    const statusPill = d.status === "closed"
+      ? `<span class="pill arch">Traité</span>` : `<span class="pill new">À rappeler</span>`;
     const lifeLine = d.life ? `<div class="lr-field"><b>Profil Life :</b> <a href="${escapeHtml(d.life)}" target="_blank" rel="noopener" class="link-btn">${escapeHtml(d.life)}</a></div>` : "";
-    const quote = d.quote ? `<div class="quote-box"><strong>Réponse :</strong><br>${escapeHtml(d.quote)}</div>` : "";
     const who = d.from ? "@" + escapeHtml(usernameById(d.from) || "client") : "visiteur";
     const actions = admin ? `<div class="lr-actions">
-        <button class="btn btn-primary btn-sm" data-devis-quote="${d.id}">Répondre / Devis</button>
-        <button class="btn btn-ghost btn-sm" data-devis-vis="${d.id}">${d.public ? "Rendre privé" : "Rendre public"}</button>
-        ${d.status !== "closed" ? `<button class="btn btn-ghost btn-sm" data-devis-close="${d.id}">Clôturer</button>` : `<button class="btn btn-ghost btn-sm" data-devis-reopen="${d.id}">Rouvrir</button>`}
+        ${d.status !== "closed" ? `<button class="btn btn-success btn-sm" data-devis-close="${d.id}">Marquer traité</button>` : `<button class="btn btn-ghost btn-sm" data-devis-reopen="${d.id}">À rappeler</button>`}
         <button class="btn btn-danger btn-sm" data-devis-del="${d.id}">Supprimer</button></div>` : "";
     return `<div class="list-row ${admin && !d.read ? "unread" : ""}">
       <div class="lr-top"><span class="lr-title">${escapeHtml(d.sujet || "Demande de devis")}</span>
-        <span class="actions-group">${statusPill}${admin ? visPill : ""}</span></div>
+        <span class="actions-group">${statusPill}</span></div>
       <div class="lr-meta">${escapeHtml(d.prenom)} ${escapeHtml(d.nom)} · 📞 ${escapeHtml(d.tel || "—")} · ${fmtDateTime(d.createdAt)} · ${who}</div>
-      ${lifeLine}${d.message ? `<div class="lr-msg">${escapeHtml(d.message)}</div>` : ""}${quote}${actions}</div>`;
+      ${lifeLine}${d.message ? `<div class="lr-msg">${escapeHtml(d.message)}</div>` : ""}${actions}</div>`;
   }
   function renderAdminDevis() {
     const wrap = $("#admin-devis");
     $("#admin-devis-empty").hidden = DB.devis.length > 0;
     wrap.innerHTML = DB.devis.map((d) => devisRow(d, true)).join("");
-    $$("[data-devis-quote]", wrap).forEach((b) => b.addEventListener("click", () => openQuote(b.dataset.devisQuote)));
-    $$("[data-devis-vis]", wrap).forEach((b) => b.addEventListener("click", () => toggleDevisVis(b.dataset.devisVis)));
     $$("[data-devis-close]", wrap).forEach((b) => b.addEventListener("click", () => setDevisStatus(b.dataset.devisClose, "closed")));
-    $$("[data-devis-reopen]", wrap).forEach((b) => b.addEventListener("click", () => setDevisStatus(b.dataset.devisReopen, "reopen")));
+    $$("[data-devis-reopen]", wrap).forEach((b) => b.addEventListener("click", () => setDevisStatus(b.dataset.devisReopen, "new")));
     $$("[data-devis-del]", wrap).forEach((b) => b.addEventListener("click", () => deleteDevis(b.dataset.devisDel)));
   }
-  async function toggleDevisVis(id) {
-    const d = DB.devis.find((x) => x.id === id); if (!d) return;
-    const { error } = await sb.from("devis").update({ is_public: !d.public }).eq("id", id);
-    if (error) return toast("Erreur : " + error.message);
-    await refresh(); loadPublicDevis();
-    toast(!d.public ? "Devis rendu public." : "Devis rendu privé.");
-  }
   async function setDevisStatus(id, status) {
-    const d = DB.devis.find((x) => x.id === id); if (!d) return;
-    const newStatus = status === "reopen" ? (d.quote ? "quoted" : "new") : status;
-    const { error } = await sb.from("devis").update({ status: newStatus }).eq("id", id);
+    const { error } = await sb.from("devis").update({ status }).eq("id", id);
     if (error) return toast("Erreur : " + error.message);
-    await refresh(); loadPublicDevis(); toast("Statut du devis mis à jour.");
+    await refresh(); toast("Demande mise à jour.");
   }
   function deleteDevis(id) {
     $("#confirm-title").textContent = "Supprimer la demande de devis";
@@ -655,36 +615,9 @@
     confirmAction = async () => {
       const { error } = await sb.from("devis").delete().eq("id", id);
       if (error) return toast("Erreur : " + error.message);
-      await refresh(); loadPublicDevis(); toast("Devis supprimé.");
+      await refresh(); toast("Devis supprimé.");
     };
     confirmModal.hidden = false;
-  }
-
-  const devisModal = $("#devis-modal");
-  $("#dm-close").addEventListener("click", () => (devisModal.hidden = true));
-  devisModal.addEventListener("click", (e) => { if (e.target === devisModal) devisModal.hidden = true; });
-  function openQuote(id) {
-    const d = DB.devis.find((x) => x.id === id); if (!d) return;
-    $("#dm-title").textContent = "Devis — " + (d.sujet || `${d.prenom} ${d.nom}`);
-    $("#dm-body").innerHTML = `
-      <div class="lr-meta" style="margin-bottom:12px">${escapeHtml(d.prenom)} ${escapeHtml(d.nom)} · 📞 ${escapeHtml(d.tel || "—")}${d.from ? " · @" + escapeHtml(usernameById(d.from) || "client") : ""}</div>
-      ${d.message ? `<div class="lr-msg" style="margin-bottom:14px">${escapeHtml(d.message)}</div>` : ""}
-      <div class="dm-field"><label for="dm-quote">Votre réponse / proposition de devis</label>
-        <textarea id="dm-quote" rows="6" placeholder="Ex : Prêt de 15 000€ sur 12 semaines, taux 5%/sem, échéance ~1 600€…">${escapeHtml(d.quote || "")}</textarea></div>
-      <label class="check"><input type="checkbox" id="dm-public" ${d.public ? "checked" : ""}><span>Publier ce devis (visible publiquement)</span></label>
-      <div class="modal-actions"><button class="btn btn-ghost" id="dm-cancel">Annuler</button><button class="btn btn-primary" id="dm-save">Enregistrer le devis</button></div>`;
-    $("#dm-cancel").addEventListener("click", () => (devisModal.hidden = true));
-    $("#dm-save").addEventListener("click", async () => {
-      const quote = $("#dm-quote").value.trim();
-      const isPublic = $("#dm-public").checked;
-      const patch = { quote, is_public: isPublic };
-      if (quote && d.status === "new") patch.status = "quoted";
-      const { error } = await sb.from("devis").update(patch).eq("id", id);
-      if (error) return toast("Erreur : " + error.message);
-      devisModal.hidden = true;
-      await refresh(); loadPublicDevis(); toast("Devis enregistré.");
-    });
-    devisModal.hidden = false;
   }
 
   /* ---------------- messages (admin) ---------------- */
@@ -913,7 +846,6 @@ button{font-family:sans-serif;background:#111;color:#fff;border:none;padding:10p
     navigate("accueil");
     showSite();
     if (!sb) return;
-    loadPublicDevis();
     // restaure une session existante
     const { data } = await sb.auth.getSession();
     if (data?.session) {
