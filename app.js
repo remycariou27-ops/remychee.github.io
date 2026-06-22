@@ -144,14 +144,19 @@
   }
 
   /* ============================================================
-     ROUTAGE
+     ROUTAGE PAR HASH (#accueil, #mes-dossiers, #admin-clients, …)
+     Chaque vue a sa propre URL : rafraîchir / partager / bouton
+     « retour » du navigateur fonctionnent.
      ============================================================ */
   const siteEl = $("#site"), authView = $("#auth-view"), appEl = $("#app");
 
+  const PUBLIC_PAGES = ["accueil", "services", "devis", "contact"];
+  const ADMIN_SUBS = ["overview", "devis", "messages", "clients", "newcontract", "template", "archives"];
+
+  // ----- rendu pur (ne touche pas à l'URL) -----
   function showSite(page) {
     appEl.hidden = true; authView.hidden = true; siteEl.hidden = false;
     if (page) navigate(page);
-    window.scrollTo(0, 0);
   }
   function showAuth() {
     siteEl.hidden = true; appEl.hidden = true; authView.hidden = false;
@@ -163,13 +168,51 @@
     $("#nav-links").classList.remove("open");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-  $$("[data-nav]").forEach((el) => el.addEventListener("click", (e) => { e.preventDefault(); navigate(el.dataset.nav); }));
+
+  // ----- changement d'URL -> applique la route -----
+  function setHash(h) {
+    if (location.hash.slice(1) === h) applyHash(); // même URL : on force le rendu
+    else location.hash = h;                        // sinon hashchange -> applyHash
+  }
+  function applyHash() {
+    const raw = decodeURIComponent((location.hash || "").replace(/^#/, "")) || "accueil";
+
+    if (PUBLIC_PAGES.includes(raw)) { showSite(raw); return; }
+
+    if (raw === "connexion") {
+      if (session) setHash(session.role === "admin" ? "admin" : "mes-dossiers");
+      else showAuth();
+      return;
+    }
+
+    if (raw === "mes-dossiers" || raw === "espace") {
+      if (!session) return showAuth();
+      enterPortal(); switchTab("dossiers");
+      return;
+    }
+
+    if (raw === "admin" || raw.startsWith("admin-")) {
+      if (!session) return showAuth();
+      if (session.role !== "admin") { enterPortal(); switchTab("dossiers"); return; }
+      enterPortal(); switchTab("admin");
+      const sub = raw === "admin" ? "overview" : raw.slice("admin-".length);
+      goToSub(ADMIN_SUBS.includes(sub) ? sub : "overview");
+      return;
+    }
+
+    showSite("accueil"); // route inconnue
+  }
+  window.addEventListener("hashchange", applyHash);
+
+  // ----- liaisons de navigation (écrivent l'URL) -----
+  $$("[data-nav]").forEach((el) =>
+    el.addEventListener("click", (e) => { e.preventDefault(); setHash(el.dataset.nav); }));
   $("#nav-burger").addEventListener("click", () => $("#nav-links").classList.toggle("open"));
   $("#open-espace").addEventListener("click", openEspace);
   $("#footer-espace").addEventListener("click", openEspace);
-  function openEspace() { if (session) renderApp(); else showAuth(); }
-  $("#auth-back").addEventListener("click", () => showSite());
-  $("#goto-site").addEventListener("click", () => showSite("accueil"));
+  function openEspace() { setHash(session ? (session.role === "admin" ? "admin" : "mes-dossiers") : "connexion"); }
+  $("#auth-back").addEventListener("click", () => setHash("accueil"));
+  $("#goto-site").addEventListener("click", () => setHash("accueil"));
 
   /* ============================================================
      FORMULAIRES PUBLICS (contact + devis) — visiteur autorisé
@@ -265,7 +308,7 @@
     session = null;
     DB.contracts = []; DB.devis = []; DB.contacts = []; DB.profiles = [];
     loginForm.reset(); registerForm.reset();
-    showSite("accueil");
+    setHash("accueil");
   });
 
   // Récupère le profil de l'utilisateur connecté, ouvre le portail.
@@ -278,7 +321,7 @@
     session = { id: prof.id, username: prof.username, name: prof.full_name || prof.username, role: prof.role };
     loginForm.reset(); registerForm.reset();
     await loadData();
-    renderApp();
+    setHash(session.role === "admin" ? "admin" : "mes-dossiers");
   }
 
   /* ============================================================
@@ -317,17 +360,16 @@
   /* ============================================================
      APP SHELL
      ============================================================ */
-  function renderApp() {
+  // prépare la coquille du portail (barre du haut) sans choisir d'onglet
+  function enterPortal() {
     siteEl.hidden = true; authView.hidden = true; appEl.hidden = false;
     const isAdmin = session.role === "admin";
     $("#tab-admin").hidden = !isAdmin;
     $("#user-chip").innerHTML =
       `${escapeHtml(session.name)} <span class="role ${isAdmin ? "admin" : ""}">${isAdmin ? "Administrateur" : "Client"}</span>`;
-    switchTab("dossiers");
-    renderClientSpace();
-    if (isAdmin) renderAdmin();
   }
-  $$("#main-tabs .tab").forEach((tab) => tab.addEventListener("click", () => switchTab(tab.dataset.tab)));
+  $$("#main-tabs .tab").forEach((tab) =>
+    tab.addEventListener("click", () => setHash(tab.dataset.tab === "admin" ? "admin" : "mes-dossiers")));
   function switchTab(name) {
     $$("#main-tabs .tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === name));
     $("#view-dossiers").hidden = name !== "dossiers";
@@ -335,7 +377,7 @@
     if (name === "dossiers") renderClientSpace();
     if (name === "admin") renderAdmin();
   }
-  $$("#view-admin .subtab").forEach((st) => st.addEventListener("click", () => goToSub(st.dataset.sub)));
+  $$("#view-admin .subtab").forEach((st) => st.addEventListener("click", () => setHash("admin-" + st.dataset.sub)));
   function goToSub(sub) {
     $$("#view-admin .subtab").forEach((x) => x.classList.toggle("active", x.dataset.sub === sub));
     $("#sub-overview").hidden = sub !== "overview";
@@ -771,7 +813,7 @@ button{font-family:sans-serif;background:#111;color:#fff;border:none;padding:10p
   $("#c-doc-gen").addEventListener("click", async () => {
     $("#c-doc-content").value = fillTemplate(await getTemplate(), contractMergeData(readForm()));
   });
-  $("#c-doc-editmodel").addEventListener("click", () => goToSub("template"));
+  $("#c-doc-editmodel").addEventListener("click", () => setHash("admin-template"));
 
   async function loadTemplateEditor() {
     $("#tpl-editor").value = await getTemplate();
@@ -824,7 +866,7 @@ button{font-family:sans-serif;background:#111;color:#fff;border:none;padding:10p
       contractForm.reset();
       $("#c-start").value = todayISO(); $("#c-preview").innerHTML = ""; $("#c-doc-content").value = "";
       toast("Contrat créé pour " + clientName(f.client) + " — en attente de signature.");
-      await refresh(); goToSub("overview");
+      await refresh(); setHash("admin-overview");
     } finally { btn.disabled = false; }
   });
 
@@ -853,18 +895,18 @@ button{font-family:sans-serif;background:#111;color:#fff;border:none;padding:10p
      INIT
      ============================================================ */
   (async function init() {
-    navigate("accueil");
-    showSite();
-    if (!sb) return;
-    // restaure une session existante
-    const { data } = await sb.auth.getSession();
-    if (data?.session) {
-      const { data: prof } = await sb.from("profiles").select("*").eq("id", data.session.user.id).single();
-      if (prof) {
-        session = { id: prof.id, username: prof.username, name: prof.full_name || prof.username, role: prof.role };
-        await loadData();
-        // on reste sur le site public ; l'utilisateur ouvre l'espace via le bouton
+    showSite("accueil"); // affichage immédiat le temps de restaurer la session
+    if (sb) {
+      // restaure une session existante
+      const { data } = await sb.auth.getSession();
+      if (data?.session) {
+        const { data: prof } = await sb.from("profiles").select("*").eq("id", data.session.user.id).single();
+        if (prof) {
+          session = { id: prof.id, username: prof.username, name: prof.full_name || prof.username, role: prof.role };
+          await loadData();
+        }
       }
     }
+    applyHash(); // honore l'URL courante (deep-link / rafraîchissement)
   })();
 })();
