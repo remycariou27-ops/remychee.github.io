@@ -10,7 +10,7 @@
   "use strict";
 
   const ADMIN_USERNAME = "lautaro_castillo";
-  const EMAIL_DOMAIN = "users.nordhaven.app"; // e-mail synthétique pour l'auth
+  const EMAIL_DOMAIN = "nordhaven-capital.com"; // e-mail synthétique pour l'auth (domaine accepté par Supabase)
   const TPL_KEY = "contract_template";
 
   /* ---------------- utils ---------------- */

@@ -25,10 +25,16 @@ soit réellement sécurisée :
 ## 3. Activer la connexion par mot de passe
 
 1. Menu **Authentication** → **Providers** → **Email** : active-le.
-2. **Désactive « Confirm email »** (les comptes utilisent un identifiant `prenom_nom`,
-   pas une vraie adresse e-mail, donc aucune confirmation n'est possible).
+2. **Désactive « Confirm email » (OBLIGATOIRE)** (les comptes utilisent un identifiant
+   `prenom_nom`, pas une vraie adresse e-mail, donc aucune confirmation n'est possible).
    - Selon la version : *Authentication → Sign In / Providers → Email → décocher
      « Confirm email »*, ou *Authentication → Settings → « Enable email confirmations » = OFF*.
+   - Symptôme si oublié : à l'inscription, erreur *« email rate limit exceeded »* et
+     impossible de se connecter.
+
+> Note technique : la connexion se fait par identifiant `prenom_nom`, converti en interne
+> en e-mail `prenom_nom@nordhaven-capital.com` (domaine accepté par Supabase ; `.app` et
+> `example.com` sont refusés). Tu n'as rien à faire, c'est automatique.
 
 ## 4. Brancher le site sur ton projet
 
